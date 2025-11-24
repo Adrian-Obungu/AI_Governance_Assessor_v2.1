@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AI Governance Assessor
 
 A production-quality AI governance assessment platform with FastAPI backend, React PWA frontend, and CLI tools.
@@ -75,3 +76,7 @@ npm test
 ## License
 
 MIT License - See LICENSE file for details
+=======
+# ai_governance_assessor_v2.1
+Enterprise-grade AI Governance Assessor built in Antigravity with FastAPI backend, React + Vite frontend, Typer CLI, and SQLite. Features secure authentication, maturity scoring across Data Privacy, Model Risk, Ethics, Compliance, CSV/PDF reporting, automated testing, CI, full documentation, and artifact-driven verification.
+>>>>>>> c0b2e178930a8c995f19386504d22db643e41717
