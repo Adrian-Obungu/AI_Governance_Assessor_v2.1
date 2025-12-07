@@ -7,7 +7,8 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
     
     # Database
-    database_url: str = "sqlite:///./ai_governance.db"
+    # The default is now set to a PostgreSQL connection string for the Docker setup
+    database_url: str = "postgresql+psycopg2://ai_user:ai_password@db:5432/ai_governance_db"
     
     # Security
     secret_key: str = "your-secret-key-here-change-in-production"

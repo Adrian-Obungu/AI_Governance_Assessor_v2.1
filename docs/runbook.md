@@ -91,8 +91,46 @@ alembic history
 
 ### Database Backup
 
+#### Connecting to the PostgreSQL Database
+
+For debugging, maintenance, or data inspection, you can connect directly to the PostgreSQL container running in your Docker environment.
+
+1.  **Find the Container ID:**
+    ```bash
+    docker ps | grep ai-governance-postgres
+    ```
+2.  **Connect using psql:**
+    Use the credentials from your `.env` file to connect to the running container.
+    ```bash
+    docker exec -it ai-governance-postgres psql -U ai_user -d ai_governance_db
+    ```
+    *   *Note: Replace `ai_user` and `ai_governance_db` with the values from your `.env` file if you changed them.*
+3.  **Exit psql:**
+    Type `\q` and press Enter.
+
+#### SQLite Backup (Legacy)
+
+#### Connecting to the PostgreSQL Database
+
+For debugging, maintenance, or data inspection, you can connect directly to the PostgreSQL container running in your Docker environment.
+
+1.  **Find the Container ID:**
+    ```bash
+    docker ps | grep ai-governance-postgres
+    ```
+2.  **Connect using psql:**
+    Use the credentials from your `.env` file to connect to the running container.
+    ```bash
+    docker exec -it ai-governance-postgres psql -U ai_user -d ai_governance_db
+    ```
+    *   *Note: Replace `ai_user` and `ai_governance_db` with the values from your `.env` file if you changed them.*
+3.  **Exit psql:**
+    Type `\q` and press Enter.
+
+#### SQLite Backup (Legacy)
+
 ```bash
-# Backup SQLite database
+# Backup SQLite database (Legacy - for reference only) (Legacy - for reference only)
 cp backend/ai_governance.db backend/ai_governance.db.backup.$(date +%Y%m%d_%H%M%S)
 
 # Restore from backup
@@ -101,10 +139,30 @@ cp backend/ai_governance.db.backup.20241124_050000 backend/ai_governance.db
 
 ### Reset Database
 
+#### PostgreSQL Reset
+To reset the PostgreSQL database, stop the services and remove the persistent volume:
+```bash
+docker-compose down
+docker volume rm ai-governance-assessor_postgres_data
+docker-compose up -d
+```
+
+#### SQLite Reset (Legacy)
+
+#### PostgreSQL Reset
+To reset the PostgreSQL database, stop the services and remove the persistent volume:
+```bash
+docker-compose down
+docker volume rm ai-governance-assessor_postgres_data
+docker-compose up -d
+```
+
+#### SQLite Reset (Legacy)
+
 ```bash
 cd backend
 
-# Delete database
+# Delete database (Legacy - for reference only) (Legacy - for reference only)
 rm ai_governance.db
 
 # Run migrations to recreate
@@ -232,8 +290,18 @@ docker-compose logs -f backend
 
 ### Database Inspection
 
+#### PostgreSQL Inspection
+Use the connection instructions above to inspect the PostgreSQL database.
+
+#### SQLite Inspection (Legacy)
+
+#### PostgreSQL Inspection
+Use the connection instructions above to inspect the PostgreSQL database.
+
+#### SQLite Inspection (Legacy)
+
 ```bash
-# Access SQLite database
+# Access SQLite database (Legacy - for reference only) (Legacy - for reference only)
 sqlite3 backend/ai_governance.db
 
 # Common queries

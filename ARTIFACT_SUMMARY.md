@@ -100,3 +100,34 @@ The AI Governance Assessor is fully functional, tested, documented, and ready fo
 
 **Built autonomously by Antigravity Agent**  
 **Date**: November 24, 2024
+
+## 🚀 Enterprise Readiness Sprint (Q4 2025) Enhancements
+
+This sprint was executed to transition the application from a high-quality prototype to a fully production-ready, enterprise-grade service, focusing on scalability, operational transparency, and quality assurance.
+
+### Phase 1: Database Scalability Upgrade (PostgreSQL Migration)
+- **Goal:** Replace file-based SQLite with a robust, concurrent PostgreSQL database.
+- **Changes:**
+    - `docker-compose.yml`: Added a new `db` service using `postgres:16-alpine` with persistent volume and health checks.
+    - `.env`: Created a new file to securely manage PostgreSQL credentials and define the `DATABASE_URL`.
+    - `backend/requirements.txt`: Added `psycopg2-binary` for PostgreSQL connectivity.
+    - `backend/config.py`: Updated to use the `DATABASE_URL` environment variable for database connection.
+- **Status:** Code changes complete and ready for local build verification.
+
+### Phase 2: Operational Transparency and Documentation
+- **Goal:** Improve project health visibility for operational teams.
+- **Changes:**
+    - `README.md`: Added a **Continuous Integration Status** section with a badge placeholder and a summary of the CI/CD pipeline's function.
+    - `docs/runbook.md`: Updated the **Database Management** section to include a guide on connecting to the new PostgreSQL container via `psql` and added clear instructions for resetting the PostgreSQL database volume. Legacy SQLite instructions were marked as such.
+- **Status:** Complete.
+
+### Phase 3: Frontend Quality Assurance and Testing Framework
+- **Goal:** Integrate a formal testing framework to prevent UI/routing regressions.
+- **Changes:**
+    - `frontend/package.json`: Installed **Vitest** and **@testing-library/react** as development dependencies and added `test` scripts.
+    - `frontend/vite.config.ts`: Configured Vitest to use `jsdom` environment and a setup file.
+    - `frontend/src/setupTests.ts`: Created a setup file to mock the `useAuth` context.
+    - `frontend/src/tests/AuthProtection.test.tsx`: Created a foundational unit test to verify the correct behavior of the `ProtectedRoute` component for both authenticated and unauthenticated users.
+- **Status:** Complete.
+
+**Next Action:** User to apply changes locally, verify the PostgreSQL migration, and run the new frontend tests.

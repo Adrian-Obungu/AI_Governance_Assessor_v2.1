@@ -45,11 +45,27 @@ See [docs/runbook.md](docs/runbook.md) for detailed development setup instructio
 
 ## Architecture
 
+### Continuous Integration Status
+![CI Status](https://github.com/Adrian-Obungu/AI_Governance_Assessor_v2.1/actions/workflows/ci.yml/badge.svg)
+
+The CI/CD pipeline ensures code quality and rapid deployment readiness through:
+1. Automated linting and static analysis.
+2. Comprehensive unit and integration testing.
+3. Building and tagging of production-ready container images.
+
+### Continuous Integration Status
+![CI Status](https://github.com/Adrian-Obungu/AI_Governance_Assessor_v2.1/actions/workflows/ci.yml/badge.svg)
+
+The CI/CD pipeline ensures code quality and rapid deployment readiness through:
+1. Automated linting and static analysis.
+2. Comprehensive unit and integration testing.
+3. Building and tagging of production-ready container images.
+
 - **Backend**: FastAPI + SQLite + Alembic migrations
 - **Frontend**: React + Vite + TypeScript + Tailwind CSS + PWA
 - **CLI**: Typer-based command-line tools
 - **Database**: SQLite with versioned schema migrations
-- **CI/CD**: GitHub Actions for linting, testing, and builds
+-- **CI/CD**: GitHub Actions for automated linting, testing, and container buildsnd container builds
 
 ## Documentation
 
