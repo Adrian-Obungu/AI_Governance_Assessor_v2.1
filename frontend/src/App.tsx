@@ -15,8 +15,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
+      <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route
             path="/dashboard"
@@ -44,7 +43,6 @@ const App: React.FC = () => {
           />
           <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
-      </BrowserRouter>
     </AuthProvider>
   );
 };
