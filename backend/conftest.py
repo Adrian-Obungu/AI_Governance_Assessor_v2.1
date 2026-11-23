@@ -2,12 +2,15 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from backend.main import app
+
 from backend.db.database import Base, get_db
+from backend.main import app
 
 # Test database
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -45,20 +48,16 @@ def test_user(client):
         json={
             "email": "test@example.com",
             "password": "testpassword123",
-            "full_name": "Test User"
-        }
+            "full_name": "Test User",
+        },
     )
     assert response.status_code == 201
-    
+
     # Login to get token
     login_response = client.post(
-        "/auth/login",
-        json={
-            "email": "test@example.com",
-            "password": "testpassword123"
-        }
+        "/auth/login", json={"email": "test@example.com", "password": "testpassword123"}
     )
     assert login_response.status_code == 200
     token = login_response.json()["access_token"]
-    
+
     return {"email": "test@example.com", "token": token}

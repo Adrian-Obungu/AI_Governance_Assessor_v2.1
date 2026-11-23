@@ -1,34 +1,34 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
-from typing import List
-from backend.db.database import get_db
-from backend.db.models import User
-from backend.auth.dependencies import get_current_user
-from backend.assessments.schemas import (
-    AssessmentCreate,
-    AssessmentUpdate,
-    AssessmentResponse,
-    CategoryAnswers,
-    AssessmentResultResponse,
-    AssessmentSummary,
-    QuestionnaireResponse
-)
+
 from backend.assessments.crud import (
     create_assessment,
-    get_assessment,
-    get_user_assessments,
-    update_assessment,
     delete_assessment,
+    get_assessment,
+    get_assessment_summary,
+    get_user_assessments,
     submit_category_answers,
-    get_assessment_summary
+    update_assessment,
 )
 from backend.assessments.questionnaire import QUESTIONNAIRES, AssessmentCategory
 from backend.assessments.reports import generate_csv_report, generate_pdf_report
+from backend.assessments.schemas import (
+    AssessmentCreate,
+    AssessmentResponse,
+    AssessmentResultResponse,
+    AssessmentSummary,
+    AssessmentUpdate,
+    CategoryAnswers,
+    QuestionnaireResponse,
+)
+from backend.auth.dependencies import get_current_user
+from backend.db.database import get_db
+from backend.db.models import User
 
 router = APIRouter(prefix="/assessments", tags=["assessments"])
 
 
-@router.get("/questionnaires", response_model=List[QuestionnaireResponse])
+@router.get("/questionnaires", response_model=list[QuestionnaireResponse])
 async def get_questionnaires():
     """Get all questionnaire templates"""
     return [
@@ -36,7 +36,7 @@ async def get_questionnaires():
             "category": category,
             "title": data["title"],
             "description": data["description"],
-            "questions": data["questions"]
+            "questions": data["questions"],
         }
         for category, data in QUESTIONNAIRES.items()
     ]
@@ -50,7 +50,7 @@ async def get_questionnaire(category: AssessmentCategory):
         "category": category,
         "title": data["title"],
         "description": data["description"],
-        "questions": data["questions"]
+        "questions": data["questions"],
     }
 
 
@@ -58,19 +58,21 @@ async def get_questionnaire(category: AssessmentCategory):
 async def create_new_assessment(
     assessment: AssessmentCreate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Create a new assessment"""
-    db_assessment = create_assessment(db, current_user.id, assessment.title, assessment.description)
+    db_assessment = create_assessment(
+        db, current_user.id, assessment.title, assessment.description
+    )
     return db_assessment
 
 
-@router.get("", response_model=List[AssessmentResponse])
+@router.get("", response_model=list[AssessmentResponse])
 async def list_assessments(
     skip: int = 0,
     limit: int = 100,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """List all assessments for the current user"""
     assessments = get_user_assessments(db, current_user.id, skip, limit)
@@ -81,12 +83,14 @@ async def list_assessments(
 async def get_assessment_detail(
     assessment_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get assessment details"""
     assessment = get_assessment(db, assessment_id, current_user.id)
     if not assessment:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found"
+        )
     return assessment
 
 
@@ -95,17 +99,19 @@ async def update_assessment_detail(
     assessment_id: int,
     assessment_update: AssessmentUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Update assessment details"""
     updated = update_assessment(
         db,
         assessment_id,
         current_user.id,
-        **assessment_update.model_dump(exclude_unset=True)
+        **assessment_update.model_dump(exclude_unset=True),
     )
     if not updated:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found"
+        )
     return updated
 
 
@@ -113,12 +119,14 @@ async def update_assessment_detail(
 async def delete_assessment_detail(
     assessment_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Delete an assessment"""
     success = delete_assessment(db, assessment_id, current_user.id)
     if not success:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found"
+        )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -127,7 +135,7 @@ async def submit_answers(
     assessment_id: int,
     category_answers: CategoryAnswers,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Submit answers for a category"""
     result = submit_category_answers(
@@ -135,10 +143,12 @@ async def submit_answers(
         assessment_id,
         current_user.id,
         category_answers.category,
-        category_answers.answers
+        category_answers.answers,
     )
     if not result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found"
+        )
     return result
 
 
@@ -146,12 +156,14 @@ async def submit_answers(
 async def get_summary(
     assessment_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get assessment summary with overall score"""
     summary = get_assessment_summary(db, assessment_id, current_user.id)
     if not summary:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found"
+        )
     return summary
 
 
@@ -159,19 +171,23 @@ async def get_summary(
 async def export_csv(
     assessment_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Export assessment as CSV"""
     assessment = get_assessment(db, assessment_id, current_user.id)
     if not assessment:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found")
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found"
+        )
+
     csv_content = generate_csv_report(assessment, assessment.results)
-    
+
     return Response(
         content=csv_content,
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename=assessment_{assessment_id}.csv"}
+        headers={
+            "Content-Disposition": f"attachment; filename=assessment_{assessment_id}.csv"
+        },
     )
 
 
@@ -179,17 +195,21 @@ async def export_csv(
 async def export_pdf(
     assessment_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Export assessment as PDF"""
     assessment = get_assessment(db, assessment_id, current_user.id)
     if not assessment:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found")
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found"
+        )
+
     pdf_content = generate_pdf_report(assessment, assessment.results)
-    
+
     return Response(
         content=pdf_content,
         media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename=assessment_{assessment_id}.pdf"}
+        headers={
+            "Content-Disposition": f"attachment; filename=assessment_{assessment_id}.pdf"
+        },
     )

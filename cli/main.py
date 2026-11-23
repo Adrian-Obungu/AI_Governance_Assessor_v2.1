@@ -7,7 +7,6 @@ Command-line interface for managing AI governance assessments
 import typer
 from rich.console import Console
 from rich.table import Table
-from rich import print as rprint
 from typing import Optional
 import os
 from cli.api_client import APIClient

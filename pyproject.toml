@@ -1,0 +1,9 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+# CI baseline: syntax/import correctness and unused-code detection.
+# Broader rules such as timezone modernization and FastAPI dependency-call
+# patterns remain a documented follow-up rather than a silent CI failure.
+select = ["E4", "E7", "E9", "F"]

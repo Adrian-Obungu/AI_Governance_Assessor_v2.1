@@ -1,17 +1,17 @@
-from logging.config import fileConfig
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-from alembic import context
 import sys
+from logging.config import fileConfig
 from pathlib import Path
+
+from sqlalchemy import engine_from_config, pool
+
+from alembic import context
 
 # Add backend directory to path
 backend_dir = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(backend_dir))
 
-from backend.db.database import Base
-from backend.db.models import User, FailedLogin, PasswordReset, Assessment, AssessmentResult
-from backend.config import settings
+from backend.config import settings  # noqa: E402
+from backend.db.database import Base  # noqa: E402
 
 # Alembic Config object
 config = context.config
@@ -50,9 +50,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
