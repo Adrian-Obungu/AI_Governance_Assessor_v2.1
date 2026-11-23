@@ -1,0 +1,23 @@
+# UI/UX research sources
+
+- WCAG 2.2: https://www.w3.org/TR/WCAG22/
+  - Four principles: perceivable, operable, understandable, robust.
+  - Relevant additions include focus not obscured, target size, consistent help, redundant entry, and accessible authentication.
+- GOV.UK form structure: https://www.gov.uk/service-manual/design/form-structure
+  - Use a question protocol; ask only necessary questions; branch to avoid irrelevant questions; start with one thing per page; structure forms for recovery and mobile use.
+- GOV.UK interface writing: https://www.gov.uk/service-manual/design/writing-for-user-interfaces
+  - Minimize cognitive load with clear user language, short direct copy, useful headings, one H1 per page, and labels directly associated with fields.
+- Nielsen Norman Group heuristics: https://www.nngroup.com/articles/ten-usability-heuristics/
+  - Maintain visibility of system status, match user language, preserve user control, prevent errors, favor recognition over recall, keep interfaces minimalist, and support error recovery.
+- USWDS form guidance: https://designsystem.digital.gov/components/form/
+  - Use fieldset/legend for related controls, vertical form layouts, aligned validation, explicit required/optional states, and contextual help instead of confusing disabled controls.
+- NIST AI Risk Management Framework: https://www.nist.gov/itl/ai-risk-management-framework
+  - The assessor should make risk work legible across Govern, Map, Measure, and Manage rather than presenting an unexplained score alone.
+- Material Design accessibility guidance: https://m3.material.io/foundations/designing
+  - Use semantic HTML and standard controls; translate visual design into a linear, text-based experience that maps cleanly to code.
+- Cloudflare Quick Tunnels: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/
+  - `cloudflared tunnel --url http://localhost:80` creates a temporary trycloudflare.com URL; anyone with it can access the service, and `--allowed-mail` can restrict access.
+- Tailscale Funnel: https://tailscale.com/docs/reference/tailscale-cli/funnel
+  - Funnel can expose a local service over HTTPS; Tailscale Serve limits access to the tailnet.
+- ngrok quickstart: https://ngrok.com/docs/start
+  - `ngrok http <port>` exposes a local service through an assigned public URL after agent authentication.

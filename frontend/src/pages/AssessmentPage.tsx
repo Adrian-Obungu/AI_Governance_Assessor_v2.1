@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { assessmentAPI } from '../services/api';
-import type { Assessment, Questionnaire, Question } from '../types';
+import type { Assessment, AssessmentResult, Questionnaire, Question } from '../types';
 
 const AssessmentPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -29,7 +29,7 @@ const AssessmentPage: React.FC = () => {
             setQuestionnaires(questionnairesData);
 
             // Select first incomplete category
-            const completedCategories = assessmentData.results.map((r: any) => r.category);
+            const completedCategories = assessmentData.results.map((result: AssessmentResult) => result.category);
             const firstIncomplete = questionnairesData.find(
                 (q: Questionnaire) => !completedCategories.includes(q.category)
             );
@@ -83,6 +83,12 @@ const AssessmentPage: React.FC = () => {
                 <div className="mb-6">
                     <h1 className="text-3xl font-bold text-gray-800">{assessment.title}</h1>
                     {assessment.description && <p className="text-gray-600 mt-2">{assessment.description}</p>}
+                    <p className="text-sm text-gray-600 mt-3" aria-live="polite">
+                        {completedCategories.length} of {questionnaires.length} sections complete
+                    </p>
+                    <div className="mt-2 h-2 rounded-full bg-gray-200" role="progressbar" aria-valuemin={0} aria-valuemax={questionnaires.length} aria-valuenow={completedCategories.length} aria-label="Assessment progress">
+                        <div className="h-2 rounded-full bg-primary-600 transition-all" style={{ width: `${questionnaires.length ? (completedCategories.length / questionnaires.length) * 100 : 0}%` }} />
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -130,8 +136,8 @@ const AssessmentPage: React.FC = () => {
 
                                 <div className="space-y-6">
                                     {currentQuestionnaire.questions.map((question: Question) => (
-                                        <div key={question.id} className="border-b border-gray-200 pb-6 last:border-0">
-                                            <h4 className="font-medium text-gray-800 mb-3">{question.text}</h4>
+                                        <fieldset key={question.id} className="border-b border-gray-200 pb-6 last:border-0">
+                                            <legend className="font-medium text-gray-800 mb-3">{question.text}</legend>
                                             <div className="space-y-2">
                                                 {question.options.map((option) => (
                                                     <label
@@ -150,7 +156,7 @@ const AssessmentPage: React.FC = () => {
                                                     </label>
                                                 ))}
                                             </div>
-                                        </div>
+                                        </fieldset>
                                     ))}
                                 </div>
 

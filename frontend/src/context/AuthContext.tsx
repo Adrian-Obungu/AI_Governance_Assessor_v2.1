@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 interface AuthContextType {
     token: string | null;
@@ -11,18 +11,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [token, setToken] = useState<string | null>(null);
-    const [email, setEmail] = useState<string | null>(null);
-
-    useEffect(() => {
-        // Load from localStorage on mount
-        const savedToken = localStorage.getItem('auth_token');
-        const savedEmail = localStorage.getItem('auth_email');
-        if (savedToken && savedEmail) {
-            setToken(savedToken);
-            setEmail(savedEmail);
-        }
-    }, []);
+    const [token, setToken] = useState<string | null>(() => localStorage.getItem('auth_token'));
+    const [email, setEmail] = useState<string | null>(() => localStorage.getItem('auth_email'));
 
     const login = (newToken: string, newEmail: string) => {
         setToken(newToken);
@@ -45,6 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {

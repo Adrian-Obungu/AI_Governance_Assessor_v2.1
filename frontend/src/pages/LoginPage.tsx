@@ -29,8 +29,8 @@ const LoginPage: React.FC = () => {
                 login(loginData.access_token, email);
                 navigate('/dashboard');
             }
-        } catch (err: any) {
-            setError(err.message || 'An error occurred');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -38,61 +38,70 @@ const LoginPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4">
-            <div className="card max-w-md w-full">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">
+            <div className="card max-w-md w-full" aria-labelledby="auth-title">
+                <h1 id="auth-title" className="text-3xl font-bold text-gray-800 mb-2 text-center">
                     AI Governance Assessor
                 </h1>
                 <p className="text-gray-600 text-center mb-6">
-                    {isLogin ? 'Sign in to your account' : 'Create a new account'}
+                    {isLogin ? 'Sign in to review and manage AI governance assessments.' : 'Create an account to start an AI governance assessment.'}
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {!isLogin && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Full Name
+                            <label htmlFor="full-name" className="block text-sm font-medium text-gray-700 mb-1">
+                                Full name
                             </label>
                             <input
+                                id="full-name"
                                 type="text"
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
                                 className="input-field"
-                                placeholder="John Doe"
+                                placeholder="Jane Doe"
+                                autoComplete="name"
+                                required
                             />
                         </div>
                     )}
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                             Email
                         </label>
                         <input
+                            id="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="input-field"
                             placeholder="you@example.com"
+                            autoComplete="email"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                             Password
                         </label>
                         <input
+                            id="password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="input-field"
                             placeholder="••••••••"
+                            autoComplete={isLogin ? 'current-password' : 'new-password'}
+                            aria-describedby="password-hint"
                             required
                             minLength={8}
                         />
+                        <p id="password-hint" className="mt-1 text-xs text-gray-500">Use at least 8 characters.</p>
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                        <div role="alert" className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
                             {error}
                         </div>
                     )}
@@ -102,12 +111,13 @@ const LoginPage: React.FC = () => {
                         disabled={loading}
                         className="btn-primary w-full disabled:opacity-50"
                     >
-                        {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Sign Up'}
+                        {loading ? 'Processing...' : isLogin ? 'Sign in' : 'Create account'}
                     </button>
                 </form>
 
                 <div className="mt-4 text-center">
                     <button
+                        type="button"
                         onClick={() => {
                             setIsLogin(!isLogin);
                             setError('');
