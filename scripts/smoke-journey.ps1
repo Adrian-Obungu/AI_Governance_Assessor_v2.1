@@ -41,7 +41,7 @@ function Get-HttpStatusCode([System.Exception]$Exception) {
 
 $BaseUrl = $BaseUrl.TrimEnd('/')
 $stamp = Get-Date -Format 'yyyyMMddHHmmssfff'
-$email = "synthetic-$stamp@example.test"
+$email = "synthetic-$stamp@example.com"
 $password = 'SyntheticJourney123!'
 $headers = @{}
 

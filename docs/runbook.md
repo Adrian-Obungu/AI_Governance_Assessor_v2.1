@@ -32,13 +32,13 @@ Invoke-WebRequest -UseBasicParsing http://localhost:8000/health
 Invoke-WebRequest -UseBasicParsing http://localhost/
 ```
 
-After the services are healthy, run the disposable synthetic API journey. It creates a unique `example.test` account, reads the live questionnaire schema, submits the highest available option for every question, verifies the summary, downloads both exports, and checks that unauthenticated assessment access is rejected:
+After the services are healthy, run the disposable synthetic API journey. It creates a unique address under the reserved `example.com` documentation domain, reads the live questionnaire schema, submits the highest available option for every question, verifies the summary, downloads both exports, and checks that unauthenticated assessment access is rejected:
 
 ```powershell
 .\scripts\smoke-journey.ps1
 ```
 
-The journey is API-level evidence rather than a browser test. It does not use real credentials, production data, or a persistent test account. The account remains local database data; remove it with `docker compose down -v` only when you intentionally want to destroy the local PostgreSQL volume.
+The journey is API-level evidence rather than a browser test. It does not use real credentials, production data, or a persistent test account. It uses a unique address under the reserved `example.com` documentation domain, and the account remains local database data; remove it with `docker compose down -v` only when you intentionally want to destroy the local PostgreSQL volume.
 
 Stop the stack with `docker compose down`. Remove the local PostgreSQL volume only when you intentionally want to destroy local data:
 
