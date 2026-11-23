@@ -91,7 +91,8 @@ foreach ($questionnaire in $questionnaires) {
 }
 
 $summary = Invoke-ApiJson -Method Get -Uri "$BaseUrl/assessments/$assessmentId/summary" -Headers $headers
-Assert-Equal $summary.category_scores.Count 4 'The summary should contain four category scores.'
+$categoryScoreCount = @($summary.category_scores.PSObject.Properties).Count
+Assert-Equal $categoryScoreCount 4 'The summary should contain four category scores.'
 if ($summary.overall_score -lt 0 -or $summary.overall_score -gt 100) {
     throw "Summary score is outside the expected 0-100 range: $($summary.overall_score)"
 }
