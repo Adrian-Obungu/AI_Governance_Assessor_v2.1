@@ -6,10 +6,11 @@ From the repository root:
 
 ```powershell
 cd C:\path\to\AI_Governance_Assessor_v2.1
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-docker compose up -d --build
+.\scripts\preflight.ps1 -Start -Build
 docker compose ps
 ```
+
+The preflight is intentionally run from the repository root. It checks that the Docker CLI exists, that Docker Desktop's Linux engine is reachable, that `.env` exists (copying `.env.example` for local development when needed), that Compose can resolve its configuration, and whether the host ports are already occupied. Without `-Start`, it performs diagnostics only; use `-Start` to launch the existing images or `-Start -Build` after code or Dockerfile changes.
 
 On Linux/macOS, use `cp .env.example .env` instead. The Docker template now includes the PostgreSQL variables required by Compose. The local services are:
 
@@ -38,6 +39,18 @@ docker compose down -v
 ```
 
 ## Docker troubleshooting
+
+Use the first failing preflight message to classify the problem rather than repeatedly rebuilding the application:
+
+| Preflight result | Meaning | Next action |
+| --- | --- | --- |
+| `Docker CLI was not found` | Docker Desktop or its CLI is not installed/on `PATH`. | Install or repair Docker Desktop, then reopen PowerShell. |
+| `Linux engine is unavailable` | Docker Desktop is closed, still starting, or using the wrong container mode. | Start Docker Desktop, switch to Linux containers, wait for readiness, and rerun the preflight. |
+| `No .env ...` or Compose configuration failure | Local configuration is missing or invalid. | Review `.env.example`, create `.env`, then run `docker compose config`. Never commit `.env`. |
+| Port warning | Another process or an existing stack is listening on port 80 or 8000. | Confirm whether it is this project; stop the conflict or change the host mapping. |
+| Service endpoint not ready | Compose started, but the application or proxy has not become healthy. | Run `docker compose ps` and `docker compose logs --tail=100 backend frontend db`. |
+
+If `docker compose ps` is run outside the repository root, Compose cannot find `docker-compose.yml` and reports `no configuration file provided`. Change into the repository root before running Compose commands.
 
 If the frontend build reports that `nginx.conf` is missing, confirm that the command is run from the repository root and that the Compose file uses the repository-root frontend build context. The canonical file is `docker/nginx.conf`.
 

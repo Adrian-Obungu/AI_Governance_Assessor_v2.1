@@ -178,3 +178,53 @@ def test_unauthorized_access(client):
     """Test accessing protected endpoint without auth"""
     response = client.get("/assessments")
     assert response.status_code == 403
+
+
+def test_assessment_ownership_boundary(client, test_user, second_user):
+    """A user cannot read, change, answer, summarize, or export another user's assessment."""
+    owner_headers = {"Authorization": f"Bearer {test_user['token']}"}
+    other_headers = {"Authorization": f"Bearer {second_user['token']}"}
+    create_response = client.post(
+        "/assessments",
+        json={"title": "Owner-only assessment"},
+        headers=owner_headers,
+    )
+    assert create_response.status_code == 201
+    assessment_id = create_response.json()["id"]
+
+    list_response = client.get("/assessments", headers=other_headers)
+    assert list_response.status_code == 200
+    assert list_response.json() == []
+
+    protected_requests = [
+        client.get(f"/assessments/{assessment_id}", headers=other_headers),
+        client.put(
+            f"/assessments/{assessment_id}",
+            json={"title": "Tampered title"},
+            headers=other_headers,
+        ),
+        client.post(
+            f"/assessments/{assessment_id}/answers",
+            json={
+                "category": "data_privacy",
+                "answers": {
+                    "dp_1": 10,
+                    "dp_2": 5,
+                    "dp_3": 15,
+                    "dp_4": 10,
+                    "dp_5": 15,
+                },
+            },
+            headers=other_headers,
+        ),
+        client.get(f"/assessments/{assessment_id}/summary", headers=other_headers),
+        client.get(f"/assessments/{assessment_id}/export/csv", headers=other_headers),
+        client.get(f"/assessments/{assessment_id}/export/pdf", headers=other_headers),
+        client.delete(f"/assessments/{assessment_id}", headers=other_headers),
+    ]
+
+    assert all(response.status_code == 404 for response in protected_requests)
+
+    owner_response = client.get(f"/assessments/{assessment_id}", headers=owner_headers)
+    assert owner_response.status_code == 200
+    assert owner_response.json()["title"] == "Owner-only assessment"

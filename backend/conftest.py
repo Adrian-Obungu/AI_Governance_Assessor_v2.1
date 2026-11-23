@@ -61,3 +61,27 @@ def test_user(client):
     token = login_response.json()["access_token"]
 
     return {"email": "test@example.com", "token": token}
+
+
+@pytest.fixture
+def second_user(client):
+    """Create a second synthetic user for ownership-boundary tests."""
+    response = client.post(
+        "/auth/signup",
+        json={
+            "email": "second@example.com",
+            "password": "secondpassword123",
+            "full_name": "Second User",
+        },
+    )
+    assert response.status_code == 201
+
+    login_response = client.post(
+        "/auth/login",
+        json={"email": "second@example.com", "password": "secondpassword123"},
+    )
+    assert login_response.status_code == 200
+    return {
+        "email": "second@example.com",
+        "token": login_response.json()["access_token"],
+    }
