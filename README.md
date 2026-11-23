@@ -1,98 +1,97 @@
-<<<<<<< HEAD
 # AI Governance Assessor
 
-A production-quality AI governance assessment platform with FastAPI backend, React PWA frontend, and CLI tools.
+A self-hostable assessment platform for translating practical AI governance controls into structured evidence, maturity scores, and exportable reports.
 
-## Features
+The project is designed for security, compliance, and engineering teams that need a repeatable way to document how an AI system is governed. It is an assessment aid—not a legal-certification engine and not a substitute for professional advice.
 
-- **Comprehensive Assessment**: Evaluate AI systems across Data Privacy, Model Risk, Ethics, and Compliance
-- **Secure Authentication**: Bcrypt password hashing, account lockout, rate limiting
-- **Multi-Format Reports**: Export assessments as CSV or PDF
-- **Progressive Web App**: Offline-capable React frontend with responsive design
-- **CLI Tools**: Command-line interface for automation and scripting
-- **Fully Containerized**: Docker Compose for easy deployment
+## Current status
 
-## Quick Start
+This repository is the candidate canonical implementation of the AI Governance Assessor. It is under active validation and cleanup. Treat the current release as a development/assessment environment until the end-to-end checks below pass in CI and locally.
 
-### Prerequisites
+## Capabilities
 
-- Docker and Docker Compose
-- Node.js 18+ (for local development)
-- Python 3.11+ (for local development)
-
-### Running with Docker
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd ai-governance-assessor
-
-# Copy environment template
-cp .env.example .env
-
-# Build and start all services
-docker-compose up --build
-
-# Access the application
-# Frontend: http://localhost:5173
-# Backend API: http://localhost:8000
-# API Docs: http://localhost:8000/docs
-```
-
-### Local Development
-
-See [docs/runbook.md](docs/runbook.md) for detailed development setup instructions.
+- Assess AI systems across data privacy, model risk, ethics, and compliance domains.
+- Provide a FastAPI backend with authenticated assessment workflows.
+- Provide a React/Vite progressive web application.
+- Provide a Typer-based CLI for scripted workflows.
+- Export assessment results as CSV and PDF.
+- Run locally with Docker Compose and PostgreSQL.
+- Run automated backend, frontend, and CLI tests.
 
 ## Architecture
 
-### Continuous Integration Status
-![CI Status](https://github.com/Adrian-Obungu/AI_Governance_Assessor_v2.1/actions/workflows/ci.yml/badge.svg)
+- **Backend:** FastAPI, SQLAlchemy, Alembic, PostgreSQL in Docker.
+- **Frontend:** React, TypeScript, Vite, Tailwind CSS, and PWA support.
+- **CLI:** Typer client for automation and scripting.
+- **Testing:** pytest, Vitest, and GitHub Actions CI.
+- **Local test database:** SQLite is used by the backend test configuration; it is not production storage.
 
-The CI/CD pipeline ensures code quality and rapid deployment readiness through:
-1. Automated linting and static analysis.
-2. Comprehensive unit and integration testing.
-3. Building and tagging of production-ready container images.
+## Quick start with Docker
 
-### Continuous Integration Status
-![CI Status](https://github.com/Adrian-Obungu/AI_Governance_Assessor_v2.1/actions/workflows/ci.yml/badge.svg)
+### Prerequisites
 
-The CI/CD pipeline ensures code quality and rapid deployment readiness through:
-1. Automated linting and static analysis.
-2. Comprehensive unit and integration testing.
-3. Building and tagging of production-ready container images.
+- Docker Engine and Docker Compose
+- Node.js 18+ for frontend development outside Docker
+- Python 3.11+ for backend and CLI development outside Docker
 
-- **Backend**: FastAPI + SQLite + Alembic migrations
-- **Frontend**: React + Vite + TypeScript + Tailwind CSS + PWA
-- **CLI**: Typer-based command-line tools
-- **Database**: SQLite with versioned schema migrations
--- **CI/CD**: GitHub Actions for automated linting, testing, and container buildsnd container builds
-
-## Documentation
-
-- [API Documentation](docs/api_docs.md)
-- [Security Guide](docs/security.md)
-- [Operations Runbook](docs/runbook.md)
-
-## Testing
+### Start the stack
 
 ```bash
-# Backend tests
-cd backend
-pytest
-
-# CLI tests
-cd cli
-pytest
-
-# Frontend tests
-cd frontend
-npm test
+git clone https://github.com/Adrian-Obungu/AI_Governance_Assessor_v2.1.git
+cd AI_Governance_Assessor_v2.1
+cp .env.example .env
+# Replace every development placeholder in .env before using the stack beyond local testing.
+docker compose up --build
 ```
+
+The default local services are:
+
+- Frontend: <http://localhost/>
+- Backend health check: <http://localhost:8000/health>
+- API documentation: <http://localhost:8000/docs>
+
+Stop the stack with:
+
+```bash
+docker compose down
+```
+
+## Local validation commands
+
+```bash
+# Backend
+cd backend
+python -m pytest -q
+
+# CLI
+cd ../cli
+python -m pytest -q
+
+# Frontend
+cd ../frontend
+npm ci
+npm test
+npm run build
+```
+
+The complete short demonstration is in [`docs/demo.md`](docs/demo.md). Operational setup is in [`docs/runbook.md`](docs/runbook.md), and the security model is in [`docs/threat-model.md`](docs/threat-model.md).
+
+## Security and privacy boundary
+
+Do not commit databases, credentials, access tokens, password-reset tokens, user exports, production logs, or personal data. Use `.env.example` only as a configuration template. Keep real secrets in the deployment secret store.
+
+The project is intended for authorized internal assessments. Only assess systems for which you have explicit permission. Do not upload confidential model data or personal information to an unapproved deployment.
+
+See [`docs/limitations.md`](docs/limitations.md) for known limitations and [`docs/security.md`](docs/security.md) for implementation guidance.
+
+## Roadmap
+
+1. Complete backend, CLI, frontend, and Docker smoke validation.
+2. Add deterministic sample data and a repeatable demo fixture.
+3. Document assessment scoring and framework mappings with citations.
+4. Add stronger audit-log and deployment-hardening guidance.
+5. Publish a versioned release only after the security and reproducibility gates pass.
 
 ## License
 
-MIT License - See LICENSE file for details
-=======
-# ai_governance_assessor_v2.1
-Enterprise-grade AI Governance Assessor built in Antigravity with FastAPI backend, React + Vite frontend, Typer CLI, and SQLite. Features secure authentication, maturity scoring across Data Privacy, Model Risk, Ethics, Compliance, CSV/PDF reporting, automated testing, CI, full documentation, and artifact-driven verification.
->>>>>>> c0b2e178930a8c995f19386504d22db643e41717
+MIT License. See [`LICENSE`](LICENSE).

@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { vi } from 'vitest';
 import App from '../App';
 import { useAuth } from '../context/AuthContext';
@@ -12,11 +12,11 @@ const mockUseAuth = useAuth as unknown as ReturnType<typeof vi.fn>;
 
 const renderApp = (initialEntries: string[] = ['/dashboard']) => {
   return render(
-    <BrowserRouter>
+    <MemoryRouter initialEntries={initialEntries}>
       <Routes>
         <Route path="*" element={<App />} />
       </Routes>
-    </BrowserRouter>,
+    </MemoryRouter>,
     { wrapper: ({ children }) => children }
   );
 };
