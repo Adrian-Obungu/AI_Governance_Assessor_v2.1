@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from backend.assessments.questionnaire import (
     AssessmentCategory,
+    QUESTIONNAIRES,
     calculate_category_score,
     get_maturity_level,
     get_recommendations,
@@ -125,14 +126,21 @@ def submit_category_answers(
     if assessment.status == "draft":
         assessment.status = "in_progress"
 
-    # Check if all categories are completed
-    results_count = (
-        db.query(AssessmentResult)
-        .filter(AssessmentResult.assessment_id == assessment_id)
-        .count()
-    )
+    # Make the new result visible before checking completion because test and local
+    # sessions intentionally use autoflush=False.
+    db.flush()
 
-    if results_count >= 4:  # All 4 categories
+    # Complete only when every category in the active questionnaire schema has a result.
+    completed_categories = {
+        category
+        for (category,) in db.query(AssessmentResult.category)
+        .filter(AssessmentResult.assessment_id == assessment_id)
+        .distinct()
+        .all()
+    }
+    required_categories = {category.value for category in QUESTIONNAIRES}
+
+    if required_categories.issubset(completed_categories):
         assessment.status = "completed"
         assessment.completed_at = datetime.utcnow()
 
