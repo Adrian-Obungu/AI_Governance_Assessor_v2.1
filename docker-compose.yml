@@ -60,16 +60,16 @@ services:
       context: .
       dockerfile: docker/Dockerfile.frontend
     container_name: ai-governance-frontend
+    restart: unless-stopped
     ports:
       - "80:80"
     depends_on:
-      - backend
-    volumes:
-      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      backend:
+        condition: service_healthy
     networks:
       - ai-governance-network
     healthcheck:
-      test: [ "CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/" ]
+      test: [ "CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/" ]
       interval: 30s
       timeout: 10s
       retries: 3

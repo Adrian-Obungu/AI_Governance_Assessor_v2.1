@@ -5,8 +5,10 @@
 From the repository root:
 
 ```powershell
-Copy-Item .env.example .env
-docker compose up --build
+cd C:\path\to\AI_Governance_Assessor_v2.1
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+docker compose up -d --build
+docker compose ps
 ```
 
 On Linux/macOS, use `cp .env.example .env` instead. The Docker template now includes the PostgreSQL variables required by Compose. The local services are:
@@ -14,6 +16,20 @@ On Linux/macOS, use `cp .env.example .env` instead. The Docker template now incl
 - Frontend: <http://localhost/>
 - Backend health check: <http://localhost:8000/health>
 - API documentation: <http://localhost:8000/docs>
+
+Use detached mode (`-d`) so closing the terminal does not stop the stack. View service logs when diagnosing a problem:
+
+```powershell
+docker compose logs --tail=100
+docker compose logs --tail=100 backend frontend db
+```
+
+Verify the endpoints without PowerShell 5.1 HTML parsing prompts:
+
+```powershell
+Invoke-WebRequest -UseBasicParsing http://localhost:8000/health
+Invoke-WebRequest -UseBasicParsing http://localhost/
+```
 
 Stop the stack with `docker compose down`. Remove the local PostgreSQL volume only when you intentionally want to destroy local data:
 
@@ -48,8 +64,9 @@ On Linux/macOS, activate with `source .venv/bin/activate` and set the variables 
 For a manual server run, use a local SQLite URL for development or a PostgreSQL URL for a database-backed deployment. Run migrations before starting the server:
 
 ```bash
-alembic upgrade head
-python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+cd ..
+PYTHONPATH=. alembic -c backend/alembic.ini upgrade head
+PYTHONPATH=. python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ## Manual CLI setup
@@ -85,7 +102,7 @@ cd ../cli && pytest -q
 cd ../frontend && npm test && npm run build
 ```
 
-The Docker smoke test is complete when the database becomes healthy, the backend health endpoint returns HTTP 200, the frontend returns HTTP 200, and a synthetic user can create an assessment through the local application.
+The Docker smoke test is complete when `docker compose ps` reports healthy database, backend, and frontend services; the backend health endpoint returns HTTP 200; the frontend returns HTTP 200; and a synthetic user can create an assessment through the local application. Run the stack detached so the validation terminal remains usable.
 
 ## Security boundary
 
