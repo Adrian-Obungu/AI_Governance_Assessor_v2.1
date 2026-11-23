@@ -11,6 +11,9 @@ const AssessmentPage: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [answers, setAnswers] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState('');
+    const [notice, setNotice] = useState('');
     const { token } = useAuth();
     const navigate = useNavigate();
 
@@ -18,8 +21,8 @@ const AssessmentPage: React.FC = () => {
         loadData();
     }, [id]);
 
-    const loadData = async () => {
-        if (!token || !id) return;
+    const loadData = async (): Promise<Assessment | null> => {
+        if (!token || !id) return null;
         try {
             const [assessmentData, questionnairesData] = await Promise.all([
                 assessmentAPI.getAssessment(token, parseInt(id)),
@@ -35,9 +38,14 @@ const AssessmentPage: React.FC = () => {
             );
             if (firstIncomplete) {
                 setSelectedCategory(firstIncomplete.category);
+            } else {
+                setSelectedCategory(null);
             }
+            return assessmentData;
         } catch (error) {
             console.error('Failed to load data:', error);
+            setError('We could not load this assessment. Please refresh and try again.');
+            return null;
         } finally {
             setLoading(false);
         }
@@ -49,12 +57,23 @@ const AssessmentPage: React.FC = () => {
 
     const handleSubmit = async () => {
         if (!token || !id || !selectedCategory) return;
+        setSubmitting(true);
+        setError('');
+        setNotice('');
         try {
             await assessmentAPI.submitAnswers(token, parseInt(id), selectedCategory, answers);
             setAnswers({});
-            loadData();
+            const refreshedAssessment = await loadData();
+            if (refreshedAssessment?.status === 'completed') {
+                navigate(`/report/${refreshedAssessment.id}`);
+            } else {
+                setNotice('Section saved. Continue with the next governance domain.');
+            }
         } catch (error) {
             console.error('Failed to submit answers:', error);
+            setError('We could not save this section. Check your answers and try again.');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -86,6 +105,8 @@ const AssessmentPage: React.FC = () => {
                     <p className="text-sm text-gray-600 mt-3" aria-live="polite">
                         {completedCategories.length} of {questionnaires.length} sections complete
                     </p>
+                    {error && <div role="alert" className="mt-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
+                    {notice && <div role="status" className="mt-4 rounded border border-green-200 bg-green-50 px-4 py-3 text-green-700">{notice}</div>}
                     <div className="mt-2 h-2 rounded-full bg-gray-200" role="progressbar" aria-valuemin={0} aria-valuemax={questionnaires.length} aria-valuenow={completedCategories.length} aria-label="Assessment progress">
                         <div className="h-2 rounded-full bg-primary-600 transition-all" style={{ width: `${questionnaires.length ? (completedCategories.length / questionnaires.length) * 100 : 0}%` }} />
                     </div>
@@ -103,6 +124,7 @@ const AssessmentPage: React.FC = () => {
                                         <button
                                             key={q.category}
                                             onClick={() => setSelectedCategory(q.category)}
+                                            aria-current={selectedCategory === q.category ? 'step' : undefined}
                                             className={`w-full text-left px-4 py-2 rounded transition-colors ${selectedCategory === q.category
                                                 ? 'bg-primary-600 text-white'
                                                 : isCompleted
@@ -163,10 +185,10 @@ const AssessmentPage: React.FC = () => {
                                 <div className="mt-6">
                                     <button
                                         onClick={handleSubmit}
-                                        disabled={Object.keys(answers).length !== currentQuestionnaire.questions.length}
+                                        disabled={submitting || Object.keys(answers).length !== currentQuestionnaire.questions.length}
                                         className="btn-primary disabled:opacity-50"
                                     >
-                                        Submit Answers
+                                        {submitting ? 'Saving section...' : completedCategories.length === questionnaires.length - 1 && !completedCategories.includes(currentQuestionnaire.category) ? 'Complete assessment' : 'Save and continue'}
                                     </button>
                                 </div>
                             </div>

@@ -4,12 +4,37 @@ import { useAuth } from '../context/AuthContext';
 import { assessmentAPI } from '../services/api';
 import type { Assessment } from '../types';
 
+const assessmentTemplates = [
+    {
+        name: 'AI governance baseline',
+        title: 'AI System Governance Baseline',
+        description: 'A first review of privacy, model risk, ethics, and regulatory readiness for an AI system.',
+    },
+    {
+        name: 'Generative AI use-case review',
+        title: 'Generative AI Use-Case Review',
+        description: 'A structured review of governance readiness for a generative AI use case or deployment.',
+    },
+    {
+        name: 'AI vendor review',
+        title: 'AI Vendor and Third-Party Review',
+        description: 'A governance baseline for an AI product, model, or service supplied by a third party.',
+    },
+    {
+        name: 'Custom assessment',
+        title: '',
+        description: '',
+    },
+];
+
 const DashboardPage: React.FC = () => {
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [newTitle, setNewTitle] = useState('');
-    const [newDescription, setNewDescription] = useState('');
+    const [newTitle, setNewTitle] = useState(assessmentTemplates[0].title);
+    const [newDescription, setNewDescription] = useState(assessmentTemplates[0].description);
+    const [selectedTemplate, setSelectedTemplate] = useState('AI governance baseline');
+    const [error, setError] = useState('');
     const { token, email, logout } = useAuth();
     const navigate = useNavigate();
 
@@ -34,14 +59,29 @@ const DashboardPage: React.FC = () => {
         if (!token) return;
 
         try {
+            setError('');
             await assessmentAPI.createAssessment(token, newTitle, newDescription);
             setShowCreateModal(false);
-            setNewTitle('');
-            setNewDescription('');
+            setNewTitle(assessmentTemplates[0].title);
+            setNewDescription(assessmentTemplates[0].description);
+            setSelectedTemplate('AI governance baseline');
             loadAssessments();
         } catch (error) {
             console.error('Failed to create assessment:', error);
+            setError('We could not create the assessment. Please try again.');
         }
+    };
+
+    const handleTemplateChange = (templateName: string) => {
+        setSelectedTemplate(templateName);
+        const template = assessmentTemplates.find((item) => item.name === templateName);
+        if (!template || templateName === 'Custom assessment') {
+            setNewTitle('');
+            setNewDescription('');
+            return;
+        }
+        setNewTitle(template.title);
+        setNewDescription(template.description);
     };
 
     const getStatusBadge = (status: string) => {
@@ -68,9 +108,24 @@ const DashboardPage: React.FC = () => {
             </nav>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <section className="card mb-8 bg-gradient-to-r from-primary-700 to-primary-500 text-white">
+                    <p className="text-sm font-semibold uppercase tracking-wide text-primary-100">AI governance readiness workspace</p>
+                    <h2 className="mt-2 text-3xl font-bold">Turn governance questions into an improvement plan.</h2>
+                    <p className="mt-3 max-w-3xl text-primary-50">
+                        Review an AI system across data privacy, model risk, ethics, and regulatory compliance. This tool provides a structured readiness assessment and recommendations; it is not a legal certification or compliance decision.
+                    </p>
+                    <div className="mt-5 grid gap-3 sm:grid-cols-4" aria-label="Assessment domains">
+                        {['Data privacy', 'Model risk', 'AI ethics', 'Compliance'].map((domain) => (
+                            <div key={domain} className="rounded bg-white/15 px-3 py-2 text-sm">{domain}</div>
+                        ))}
+                    </div>
+                </section>
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-3xl font-bold text-gray-800">My Assessments</h2>
-                    <button onClick={() => setShowCreateModal(true)} className="btn-primary">
+                    <div>
+                        <h2 className="text-3xl font-bold text-gray-800">My Assessments</h2>
+                        <p className="mt-1 text-gray-600">Track governance reviews and return to unfinished work.</p>
+                    </div>
+                    <button onClick={() => { setError(''); setShowCreateModal(true); }} className="btn-primary">
                         + New Assessment
                     </button>
                 </div>
@@ -81,9 +136,12 @@ const DashboardPage: React.FC = () => {
                     </div>
                 ) : assessments.length === 0 ? (
                     <div className="card text-center py-12">
-                        <p className="text-gray-600 mb-4">No assessments yet. Create your first one!</p>
+                        <div className="mx-auto max-w-2xl">
+                            <h3 className="text-2xl font-bold text-gray-800">Start with a governance baseline</h3>
+                            <p className="mt-3 text-gray-600">Choose a suggested assessment focus, answer the four governance sections, and receive a scored readiness summary with recommendations.</p>
+                        </div>
                         <button onClick={() => setShowCreateModal(true)} className="btn-primary">
-                            Create Assessment
+                            Start first assessment
                         </button>
                     </div>
                 ) : (
@@ -119,14 +177,29 @@ const DashboardPage: React.FC = () => {
 
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="card max-w-md w-full">
-                        <h3 className="text-2xl font-bold text-gray-800 mb-4">Create New Assessment</h3>
+                    <div className="card max-w-lg w-full" role="dialog" aria-modal="true" aria-labelledby="create-assessment-title">
+                        <h3 id="create-assessment-title" className="text-2xl font-bold text-gray-800 mb-2">Start a governance assessment</h3>
+                        <p className="text-sm text-gray-600 mb-4">The suggested names help frame your review. They do not change the current four-domain questionnaire.</p>
                         <form onSubmit={handleCreateAssessment} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="assessment-template" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Assessment focus
+                                </label>
+                                <select
+                                    id="assessment-template"
+                                    value={selectedTemplate}
+                                    onChange={(e) => handleTemplateChange(e.target.value)}
+                                    className="input-field"
+                                >
+                                    {assessmentTemplates.map((template) => <option key={template.name} value={template.name}>{template.name}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label htmlFor="assessment-title" className="block text-sm font-medium text-gray-700 mb-1">
                                     Title
                                 </label>
                                 <input
+                                    id="assessment-title"
                                     type="text"
                                     value={newTitle}
                                     onChange={(e) => setNewTitle(e.target.value)}
@@ -136,10 +209,11 @@ const DashboardPage: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="assessment-description" className="block text-sm font-medium text-gray-700 mb-1">
                                     Description (optional)
                                 </label>
                                 <textarea
+                                    id="assessment-description"
                                     value={newDescription}
                                     onChange={(e) => setNewDescription(e.target.value)}
                                     className="input-field"
@@ -147,6 +221,7 @@ const DashboardPage: React.FC = () => {
                                     placeholder="Assessment for our customer service AI system"
                                 />
                             </div>
+                            {error && <div role="alert" className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
                             <div className="flex gap-2">
                                 <button type="submit" className="btn-primary flex-1">
                                     Create
