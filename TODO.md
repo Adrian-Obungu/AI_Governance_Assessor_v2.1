@@ -8,6 +8,7 @@
 
 ## Core user journey
 
+- [x] A repeatable PowerShell API journey covers synthetic signup/login, assessment creation, all questionnaire categories, summary, CSV/PDF exports, and unauthenticated rejection.
 - [ ] A synthetic browser journey registers a user, creates an assessment, completes all questionnaire categories, reviews the report, exports CSV/PDF, and signs out.
 - [ ] The frontend test suite covers login form behavior, API loading/error states, assessment progress, report rendering, and recovery from an expired token.
 - [ ] The project has a repeatable clean-checkout smoke procedure that validates frontend HTTP delivery, API proxying, authentication, assessment creation, answer submission, summary rendering, and exports.

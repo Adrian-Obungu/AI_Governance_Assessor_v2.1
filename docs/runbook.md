@@ -32,6 +32,14 @@ Invoke-WebRequest -UseBasicParsing http://localhost:8000/health
 Invoke-WebRequest -UseBasicParsing http://localhost/
 ```
 
+After the services are healthy, run the disposable synthetic API journey. It creates a unique `example.test` account, reads the live questionnaire schema, submits the highest available option for every question, verifies the summary, downloads both exports, and checks that unauthenticated assessment access is rejected:
+
+```powershell
+.\scripts\smoke-journey.ps1
+```
+
+The journey is API-level evidence rather than a browser test. It does not use real credentials, production data, or a persistent test account. The account remains local database data; remove it with `docker compose down -v` only when you intentionally want to destroy the local PostgreSQL volume.
+
 Stop the stack with `docker compose down`. Remove the local PostgreSQL volume only when you intentionally want to destroy local data:
 
 ```bash
@@ -115,7 +123,7 @@ cd ../cli && pytest -q
 cd ../frontend && npm test && npm run build
 ```
 
-The Docker smoke test is complete when `docker compose ps` reports healthy database, backend, and frontend services; the backend health endpoint returns HTTP 200; the frontend returns HTTP 200; and a synthetic user can create an assessment through the local application. Run the stack detached so the validation terminal remains usable.
+The Docker smoke test is complete when `docker compose ps` reports healthy database, backend, and frontend services; the backend health endpoint returns HTTP 200; the frontend returns HTTP 200; and `scripts\smoke-journey.ps1` reports that signup, login, all four categories, summary, both exports, and unauthenticated rejection passed. Run the stack detached so the validation terminal remains usable.
 
 ## Security boundary
 
