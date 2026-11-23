@@ -45,7 +45,7 @@ services:
       ENVIRONMENT: development
       LOG_LEVEL: INFO
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend
     networks:
       - ai-governance-network
     healthcheck:
