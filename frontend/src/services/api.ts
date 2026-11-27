@@ -1,5 +1,5 @@
 import { ApiError, classifyHttpStatus, classifyRequestFailure } from './apiErrors';
-import type { ActivityEvent, ActivitySource, AISystem, Assessment, AssessmentResult, AssessmentSummary, EvidenceRecord, EvidenceStatus, FindingPriority, FindingRecord, FindingStatus, OperationalSignal, Questionnaire, ReviewDecision, ReviewRecord, SignalSeverity, SignalStatus, SignalType } from '../types';
+import type { ActivityEvent, ActivitySource, AISystem, Assessment, AssessmentResult, AssessmentSummary, EvidenceRecord, EvidenceStatus, FindingPriority, FindingRecord, FindingStatus, GovernanceSnapshot, OperationalSignal, Questionnaire, ReviewDecision, ReviewRecord, SignalSeverity, SignalStatus, SignalType } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -177,6 +177,10 @@ export const activityAPI = {
         const query = params.toString();
         return request<ActivityEvent[]>(`/activity${query ? `?${query}` : ''}`, { token });
     },
+};
+
+export const snapshotAPI = {
+    list: (token: string, aiSystemId?: number) => request<GovernanceSnapshot[]>(`/governance/snapshots${aiSystemId ? `?ai_system_id=${aiSystemId}` : ''}`, { token }),
 };
 
 export { request as apiRequest };

@@ -140,3 +140,13 @@ The timeline is assembled at read time from existing ownership-scoped tables. It
 The frontend presents a calm operational timeline with two filters and clear source badges. It is a navigation and orientation surface, not a new workflow: users continue to edit evidence, findings, reviews, and signals in their existing workspaces. The page explains that events are derived from recorded governance work and does not infer legal conclusions, certification, objective safety, or automated decisions.
 
 Implementation files are `backend/activity/` for the response schema, derived query logic, and route; `backend/test_activity.py` for ordering, filtering, invalid-filter, and cross-user coverage; `frontend/src/pages/ActivityPage.tsx` for the timeline; and the shared frontend API/types, protected route, dashboard entry point, route manifest, and API contract test. No migration is required for this read model.
+
+## Phase 5H: AI-system governance snapshot
+
+This slice adds a derived snapshot for each owned AI system. It summarizes workflow coverage counts for linked assessments, evidence records, findings, human reviews, and operational signals. It also exposes open findings, overdue remediation actions, active signals, reached review dates, and human-readable attention items. These are indicators of recorded workflow state, not a risk score, legal conclusion, certification, or objective safety measure.
+
+The backend assembles snapshots at read time from existing tables under `/governance/snapshots`, with an optional AI-system filter. Attention ordering is intentionally transparent: missing assessment context, missing evidence, overdue/open remediation, active signals, and reached review dates become prompts for human follow-up. The API is read-only and owner-scoped, and no migration is required.
+
+The frontend presents one selected system at a time by default, with coverage cards, attention items, the next suggested workflow action, and navigation links to inventory, evidence, findings, reviews, and signals. The language explains that the snapshot reflects recorded governance work and should be reviewed by a person.
+
+Implementation files are `backend/snapshot/` for schemas, derived query logic, and routes; `backend/test_snapshot.py` for coverage, attention ordering, filters, and user isolation; `frontend/src/pages/SnapshotPage.tsx` for the workspace; and the shared frontend API/types, protected route, dashboard entry point, route manifest, and API contract test. No new persistent entity or automated decision engine is introduced.
