@@ -73,3 +73,24 @@ export interface AssessmentSummary {
     overall_maturity: string;
     category_scores: Record<string, number>;
 }
+
+export type EvidenceType = 'policy' | 'procedure' | 'contract' | 'technical_document' | 'training_record' | 'audit_record' | 'review_note' | 'other';
+export type EvidenceStatus = 'draft' | 'submitted' | 'reviewed' | 'needs_update';
+
+export interface EvidenceRecord {
+    id: number;
+    user_id: number;
+    ai_system_id: number;
+    assessment_id?: number;
+    title: string;
+    description: string;
+    evidence_type: EvidenceType;
+    source_location?: string;
+    owner?: string;
+    collected_on?: string;
+    review_date?: string;
+    status: EvidenceStatus;
+    reviewer_notes?: string;
+    created_at: string;
+    updated_at: string;
+}

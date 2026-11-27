@@ -40,6 +40,16 @@
 - [x] The dashboard lets a user choose an inventory system when starting an assessment, with a clear “continue without linking” option.
 - [x] Backend regression tests and frontend/API contract coverage pass: backend `27 passed`, frontend `16 passed`, lint passed, and production build passed.
 
+## Phase 5C: Evidence records without file uploads
+
+- [x] An authenticated user can create an evidence record with title, description, type, source/location, owner, collection date, review date, status, reviewer notes, AI-system link, and optional assessment link.
+- [x] Evidence type and status values are validated, review dates are visible, and records are restricted to the authenticated owner.
+- [x] The API rejects links to another user’s AI system or assessment with `404` and supports list filters for AI system and status.
+- [x] The migration is SQLite-development and PostgreSQL-deployment compatible and preserves existing records; disposable SQLite upgrade reached revision `0005`.
+- [x] The frontend provides a low-cognitive-load evidence page with a metadata-only form, status/review visibility, and filters by system and status.
+- [x] The implementation explicitly excludes file uploads, OCR, ML classification, verified-proof claims, and sensitive hosted document storage.
+- [x] Backend regression tests and frontend/API contract coverage pass: backend `30 passed`, frontend `18 passed`, lint passed, and production build passed.
+
 - [ ] Architecture Decision Records document authentication storage, PostgreSQL/Docker boundaries, assessment versioning, PWA caching, and the non-certification product boundary.
 - [ ] Security documentation distinguishes implemented controls from recommended deployment controls and matches the PostgreSQL production path.
 - [ ] CI includes secret/database artifact checks and a production-image or disposable-Compose smoke gate where the runner supports it.

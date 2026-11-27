@@ -11,6 +11,7 @@ from backend.assessments.router import router as assessments_router
 from backend.audit.logging import log_error, log_request
 from backend.auth.router import router as auth_router
 from backend.config import settings
+from backend.evidence.router import router as evidence_router
 from backend.inventory.router import router as inventory_router
 
 # Initialize rate limiter
@@ -69,6 +70,7 @@ async def log_requests(request: Request, call_next):
 # Include routers
 app.include_router(auth_router)
 app.include_router(assessments_router)
+app.include_router(evidence_router)
 app.include_router(inventory_router)
 
 
