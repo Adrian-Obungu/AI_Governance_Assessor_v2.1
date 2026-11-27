@@ -3,12 +3,16 @@ from datetime import datetime
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
     Column,
+    Date,
     DateTime,
     ForeignKey,
     Integer,
     String,
     Text,
+    Index,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 
@@ -34,6 +38,38 @@ class User(Base):
     assessments = relationship("Assessment", back_populates="user")
     failed_logins = relationship("FailedLogin", back_populates="user")
     password_resets = relationship("PasswordReset", back_populates="user")
+    ai_systems = relationship("AISystem", back_populates="user", cascade="all, delete-orphan")
+
+
+class AISystem(Base):
+    """A user-owned AI system or AI-enabled process in the governance inventory."""
+
+    __tablename__ = "ai_systems"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String(255), nullable=False)
+    purpose = Column(Text, nullable=False)
+    department = Column(String(120), nullable=True)
+    business_owner = Column(String(255), nullable=True)
+    provider = Column(String(255), nullable=True)
+    lifecycle_stage = Column(String(32), nullable=False, default="discovery")
+    geographies = Column(JSON, nullable=False, default=list)
+    data_categories = Column(JSON, nullable=False, default=list)
+    affected_groups = Column(JSON, nullable=False, default=list)
+    review_date = Column(Date, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = relationship("User", back_populates="ai_systems")
+    __table_args__ = (
+        CheckConstraint(
+            "lifecycle_stage IN ('discovery', 'pilot', 'in_production', 'retired')",
+            name="ck_ai_systems_lifecycle_stage",
+        ),
+        Index("ix_ai_systems_user_created_at", "user_id", "created_at"),
+        Index("ix_ai_systems_user_review_date", "user_id", "review_date"),
+    )
 
 
 class FailedLogin(Base):
@@ -75,8 +111,8 @@ class Assessment(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    schema_version = Column(String(10), default="1.0")
-    status = Column(String(50), default="draft")  # draft, in_progress, completed
+    schema_version = Column(String(32), default="1.0", nullable=False)
+    status = Column(String(20), default="draft", nullable=False)  # draft, in_progress, completed
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
@@ -85,6 +121,18 @@ class Assessment(Base):
     user = relationship("User", back_populates="assessments")
     results = relationship(
         "AssessmentResult", back_populates="assessment", cascade="all, delete-orphan"
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('draft', 'in_progress', 'completed')",
+            name="ck_assessments_status",
+        ),
+        CheckConstraint(
+            "status <> 'completed' OR completed_at IS NOT NULL",
+            name="ck_assessments_completed_at",
+        ),
+        Index("ix_assessments_user_created_at", "user_id", "created_at"),
+        Index("ix_assessments_user_status", "user_id", "status"),
     )
 
 
@@ -99,6 +147,9 @@ class AssessmentResult(Base):
         String(100), nullable=False
     )  # data_privacy, model_risk, ethics, compliance
     questions = Column(JSON, nullable=False)  # Store questions and answers
+    questionnaire_version = Column(String(32), nullable=False, default="1.0")
+    questionnaire_snapshot = Column(JSON, nullable=False, default=dict)
+    scoring_version = Column(String(32), nullable=False, default="1.0")
     score = Column(Integer, nullable=False)  # 0-100
     maturity_level = Column(
         String(50), nullable=False
@@ -108,3 +159,15 @@ class AssessmentResult(Base):
 
     # Relationships
     assessment = relationship("Assessment", back_populates="results")
+    __table_args__ = (
+        UniqueConstraint(
+            "assessment_id",
+            "category",
+            name="uq_assessment_results_assessment_category",
+        ),
+        Index("ix_assessment_results_assessment_category", "assessment_id", "category"),
+        CheckConstraint(
+            "category IN ('data_privacy', 'model_risk', 'ethics', 'compliance')",
+            name="ck_assessment_results_category",
+        ),
+    )

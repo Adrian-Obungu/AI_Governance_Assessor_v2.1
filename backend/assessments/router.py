@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
@@ -102,11 +104,34 @@ async def update_assessment_detail(
     db: Session = Depends(get_db),
 ):
     """Update assessment details"""
+    existing = get_assessment(db, assessment_id, current_user.id)
+    if not existing:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found"
+        )
+
+    requested_status = assessment_update.status
+    if requested_status is not None:
+        allowed_next = {
+            "draft": {"draft", "in_progress"},
+            "in_progress": {"in_progress", "completed"},
+            "completed": {"completed"},
+        }
+        if requested_status not in allowed_next[existing.status]:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Invalid assessment status transition: {existing.status} -> {requested_status}",
+            )
+
+    update_data = assessment_update.model_dump(exclude_unset=True)
+    if requested_status == "completed" and existing.completed_at is None:
+        existing.completed_at = datetime.utcnow()
+
     updated = update_assessment(
         db,
         assessment_id,
         current_user.id,
-        **assessment_update.model_dump(exclude_unset=True),
+        **update_data,
     )
     if not updated:
         raise HTTPException(

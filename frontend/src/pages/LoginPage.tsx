@@ -10,12 +10,13 @@ const LoginPage: React.FC = () => {
     const [fullName, setFullName] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
+    const { login, sessionMessage, clearSessionMessage } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        clearSessionMessage();
         setLoading(true);
 
         try {
@@ -99,6 +100,12 @@ const LoginPage: React.FC = () => {
                         />
                         <p id="password-hint" className="mt-1 text-xs text-gray-500">Use at least 8 characters.</p>
                     </div>
+
+                    {sessionMessage && (
+                        <div role="alert" className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded">
+                            {sessionMessage}
+                        </div>
+                    )}
 
                     {error && (
                         <div role="alert" className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
