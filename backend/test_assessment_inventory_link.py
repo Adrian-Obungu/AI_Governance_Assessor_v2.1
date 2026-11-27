@@ -44,7 +44,9 @@ def test_legacy_assessment_remains_unlinked(client, test_user):
     assert response.json()["ai_system"] is None
 
 
-def test_assessment_cannot_link_to_another_users_inventory(client, test_user, second_user):
+def test_assessment_cannot_link_to_another_users_inventory(
+    client, test_user, second_user
+):
     owner_headers = {"Authorization": f"Bearer {test_user['token']}"}
     other_headers = {"Authorization": f"Bearer {second_user['token']}"}
     system = client.post("/inventory", json=inventory_payload(), headers=owner_headers)

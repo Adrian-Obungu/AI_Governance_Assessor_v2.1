@@ -67,7 +67,9 @@ async def create_new_assessment(
     if assessment.ai_system_id is not None and not get_user_ai_system(
         db, assessment.ai_system_id, current_user.id
     ):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="AI system not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="AI system not found"
+        )
     db_assessment = create_assessment(
         db,
         current_user.id,
@@ -123,7 +125,9 @@ async def update_assessment_detail(
     if assessment_update.ai_system_id is not None and not get_user_ai_system(
         db, assessment_update.ai_system_id, current_user.id
     ):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="AI system not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="AI system not found"
+        )
     if requested_status is not None:
         allowed_next = {
             "draft": {"draft", "in_progress"},

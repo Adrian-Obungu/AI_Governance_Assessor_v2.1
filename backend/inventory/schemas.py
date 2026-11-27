@@ -3,7 +3,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-
 LifecycleStage = Literal["discovery", "pilot", "in_production", "retired"]
 
 

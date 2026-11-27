@@ -97,7 +97,9 @@ def submit_category_answers(
         return None
 
     questionnaire = QUESTIONNAIRES[category]
-    expected_questions = {question["id"]: question for question in questionnaire["questions"]}
+    expected_questions = {
+        question["id"]: question for question in questionnaire["questions"]
+    }
     submitted_questions = set(answers)
     missing = sorted(set(expected_questions) - submitted_questions)
     unknown = sorted(submitted_questions - set(expected_questions))
@@ -105,7 +107,10 @@ def submit_category_answers(
         question_id: value
         for question_id, value in answers.items()
         if question_id in expected_questions
-        and value not in {option["value"] for option in expected_questions[question_id]["options"]}
+        and value
+        not in {
+            option["value"] for option in expected_questions[question_id]["options"]
+        }
     }
     if missing or unknown or invalid_options:
         raise HTTPException(

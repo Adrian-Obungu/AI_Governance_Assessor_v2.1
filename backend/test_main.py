@@ -153,9 +153,7 @@ def test_assessment_is_marked_completed_after_all_categories(client, test_user):
         )
         assert response.status_code == 200
 
-    assessment_response = client.get(
-        f"/assessments/{assessment_id}", headers=headers
-    )
+    assessment_response = client.get(f"/assessments/{assessment_id}", headers=headers)
     assert assessment_response.status_code == 200
     assessment = assessment_response.json()
     assert assessment["status"] == "completed"

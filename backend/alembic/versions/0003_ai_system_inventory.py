@@ -3,6 +3,7 @@
 Revision ID: 0003
 Revises: 0002
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -39,8 +40,18 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_ai_systems_id"), "ai_systems", ["id"], unique=False)
-    op.create_index("ix_ai_systems_user_created_at", "ai_systems", ["user_id", "created_at"], unique=False)
-    op.create_index("ix_ai_systems_user_review_date", "ai_systems", ["user_id", "review_date"], unique=False)
+    op.create_index(
+        "ix_ai_systems_user_created_at",
+        "ai_systems",
+        ["user_id", "created_at"],
+        unique=False,
+    )
+    op.create_index(
+        "ix_ai_systems_user_review_date",
+        "ai_systems",
+        ["user_id", "review_date"],
+        unique=False,
+    )
 
 
 def downgrade() -> None:

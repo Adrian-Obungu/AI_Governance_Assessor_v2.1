@@ -3,6 +3,7 @@
 Revision ID: 0004
 Revises: 0003
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -23,11 +24,19 @@ def upgrade() -> None:
                 "fk_assessments_ai_system_id", "ai_systems", ["ai_system_id"], ["id"]
             )
     else:
-        op.add_column("assessments", sa.Column("ai_system_id", sa.Integer(), nullable=True))
-        op.create_foreign_key(
-            "fk_assessments_ai_system_id", "assessments", "ai_systems", ["ai_system_id"], ["id"]
+        op.add_column(
+            "assessments", sa.Column("ai_system_id", sa.Integer(), nullable=True)
         )
-    op.create_index("ix_assessments_ai_system_id", "assessments", ["ai_system_id"], unique=False)
+        op.create_foreign_key(
+            "fk_assessments_ai_system_id",
+            "assessments",
+            "ai_systems",
+            ["ai_system_id"],
+            ["id"],
+        )
+    op.create_index(
+        "ix_assessments_ai_system_id", "assessments", ["ai_system_id"], unique=False
+    )
 
 
 def downgrade() -> None:
@@ -38,5 +47,7 @@ def downgrade() -> None:
             batch_op.drop_constraint("fk_assessments_ai_system_id", type_="foreignkey")
             batch_op.drop_column("ai_system_id")
     else:
-        op.drop_constraint("fk_assessments_ai_system_id", "assessments", type_="foreignkey")
+        op.drop_constraint(
+            "fk_assessments_ai_system_id", "assessments", type_="foreignkey"
+        )
         op.drop_column("assessments", "ai_system_id")
