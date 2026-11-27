@@ -11,6 +11,7 @@ import FindingsPage from './pages/FindingsPage';
 import ReviewsPage from './pages/ReviewsPage';
 import SignalsPage from './pages/SignalsPage';
 import ActivityPage from './pages/ActivityPage';
+import SnapshotPage from './pages/SnapshotPage';
 import './index.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -92,6 +93,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <ActivityPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/snapshot"
+            element={
+              <ProtectedRoute>
+                <SnapshotPage />
               </ProtectedRoute>
             }
           />

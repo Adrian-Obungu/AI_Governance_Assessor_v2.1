@@ -47,6 +47,15 @@
 - [x] The activity API is read-only, ownership-scoped, supports AI-system and source-type filters, and returns no events for another user’s system.
 - [x] The frontend provides a low-cognitive-load timeline with a system filter, source filter, clear event labels, and an explanation that it is a derived activity view.
 - [x] The view preserves human-led governance boundaries and does not infer legal conclusions, objective safety, certification, or automated decisions.
+- [ ] Backend and frontend contract tests, formatting, lint, production build, and `git diff --check` pass.
+
+## Phase 5H: AI-system governance snapshot
+
+- [x] An authenticated user can view a derived snapshot for an owned AI system with workflow coverage counts for assessments, evidence, findings, human reviews, and operational signals.
+- [x] The snapshot identifies open and overdue remediation work, active operational signals, and review-date attention without producing a risk score or compliance determination.
+- [x] The API exposes human-readable attention items and a next workflow action, is read-only and ownership-scoped, and supports filtering by AI system.
+- [x] The frontend provides a low-cognitive-load snapshot page with system selection, coverage cards, attention items, and clear links back to the relevant workspaces.
+- [x] Snapshot language remains bounded to recorded governance work and does not claim legal conclusions, certification, objective safety, or automated high-impact decisions.
 - [x] Backend and frontend contract tests, formatting, lint, production build, and `git diff --check` pass.
 
 ## Phase 5B: Assessment context linkage

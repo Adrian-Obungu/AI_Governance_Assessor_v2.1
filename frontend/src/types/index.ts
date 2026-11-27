@@ -169,3 +169,34 @@ export interface ActivityEvent {
     priority?: string;
     severity?: string;
 }
+
+export interface SnapshotAttentionItem {
+    level: 'info' | 'attention';
+    title: string;
+    detail: string;
+    source_type: string;
+    source_id?: number;
+}
+
+export interface WorkflowCoverage {
+    inventory: boolean;
+    assessments: number;
+    evidence_records: number;
+    findings: number;
+    human_reviews: number;
+    operational_signals: number;
+}
+
+export interface GovernanceSnapshot {
+    ai_system_id: number;
+    system_name: string;
+    lifecycle_stage: string;
+    review_date?: string;
+    review_due: boolean;
+    coverage: WorkflowCoverage;
+    open_findings: number;
+    overdue_findings: number;
+    active_signals: number;
+    attention: SnapshotAttentionItem[];
+    next_action: string;
+}
