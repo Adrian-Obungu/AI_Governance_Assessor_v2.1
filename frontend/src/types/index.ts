@@ -94,3 +94,24 @@ export interface EvidenceRecord {
     created_at: string;
     updated_at: string;
 }
+
+export type FindingPriority = 'low' | 'medium' | 'high' | 'critical';
+export type FindingStatus = 'open' | 'in_progress' | 'resolved' | 'accepted_risk';
+
+export interface FindingRecord {
+    id: number;
+    user_id: number;
+    ai_system_id: number;
+    evidence_id: number;
+    assessment_id?: number;
+    title: string;
+    conclusion: string;
+    priority: FindingPriority;
+    owner: string;
+    remediation_action: string;
+    due_date?: string;
+    status: FindingStatus;
+    reviewer_notes?: string;
+    created_at: string;
+    updated_at: string;
+}

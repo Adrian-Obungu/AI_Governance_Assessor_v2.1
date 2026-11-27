@@ -98,3 +98,13 @@ The first UI is a mobile-friendly evidence workspace with a short form, status a
 Implementation files for this slice are `backend/evidence/` for schemas, ownership-scoped CRUD, and routes; `backend/alembic/versions/0005_evidence_records.py` for the portable migration; `backend/test_evidence.py` for API and isolation coverage; `frontend/src/pages/EvidencePage.tsx` for the guided workspace; and the shared frontend API/types, protected route, dashboard entry point, route manifest, and API contract test.
 
 Phase 5C validation completed with the full backend suite (`30 passed`), frontend tests (`18 passed`), Black, Ruff, ESLint, TypeScript/Vite production build, `git diff --check`, and a disposable SQLite migration through revision `0005`.
+
+## Phase 5D: Findings and owned remediation actions
+
+This slice adds one focused finding record rather than a separate task-management system. Each finding links an owned AI system and evidence record, may link an assessment, and captures a plain-language conclusion, priority, accountable owner, remediation action, due date, workflow status, and reviewer notes. The API verifies that the evidence belongs to the selected AI system so records cannot silently mix contexts.
+
+The frontend findings workspace follows the same calm operational pattern as inventory and evidence: filters first, one clear “Add finding” action, and cards that show the conclusion, remediation action, owner, due date, priority, status, and evidence reference. It stores working governance records only; it does not generate legal conclusions, certification claims, objective safety decisions, or automated high-impact decisions.
+
+Implementation files are `backend/findings/` for schemas, ownership-scoped CRUD, and routes; `backend/alembic/versions/0006_findings_remediation.py` for the portable migration; `backend/test_findings.py` for authorization and context-link coverage; `frontend/src/pages/FindingsPage.tsx` for the guided workspace; and the shared frontend API/types, protected route, dashboard entry point, route manifest, and API contract test.
+
+Phase 5D validation completed with the full backend suite (`33 passed`), frontend tests (`20 passed`), Black, Ruff, ESLint, TypeScript/Vite production build, `git diff --check`, and a disposable SQLite migration through revision `0006`.

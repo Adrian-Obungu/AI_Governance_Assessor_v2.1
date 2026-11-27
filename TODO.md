@@ -50,6 +50,16 @@
 - [x] The implementation explicitly excludes file uploads, OCR, ML classification, verified-proof claims, and sensitive hosted document storage.
 - [x] Backend regression tests and frontend/API contract coverage pass: backend `30 passed`, frontend `18 passed`, lint passed, and production build passed.
 
+## Phase 5D: Findings and owned remediation actions
+
+- [x] An authenticated user can create a finding linked to an owned AI system, supporting evidence record, and optional assessment, with a conclusion, priority, accountable owner, remediation action, due date, status, and reviewer notes.
+- [x] Finding priority and workflow status values are validated, due dates and remediation actions are visible, and records are restricted to the authenticated owner.
+- [x] The API rejects inaccessible or context-mismatched system, evidence, and assessment links with `404` and supports list filters for system, priority, and status.
+- [x] The migration is SQLite-development and PostgreSQL-deployment compatible and preserves existing records; disposable SQLite upgrade reached revision `0006`.
+- [x] The frontend provides a low-cognitive-load findings page that turns an evidence-backed gap into one owned, reviewable next action.
+- [x] Findings remain working governance records and do not claim legal conclusions, certification, objective safety, or automated risk decisions.
+- [x] Backend regression tests and frontend/API contract coverage pass: backend `33 passed`, frontend `20 passed`, lint passed, and production build passed.
+
 - [ ] Architecture Decision Records document authentication storage, PostgreSQL/Docker boundaries, assessment versioning, PWA caching, and the non-certification product boundary.
 - [ ] Security documentation distinguishes implemented controls from recommended deployment controls and matches the PostgreSQL production path.
 - [ ] CI includes secret/database artifact checks and a production-image or disposable-Compose smoke gate where the runner supports it.
