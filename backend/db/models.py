@@ -47,6 +47,9 @@ class User(Base):
     findings = relationship(
         "Finding", back_populates="user", cascade="all, delete-orphan"
     )
+    reviews = relationship(
+        "ReviewRecord", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class AISystem(Base):
@@ -75,6 +78,9 @@ class AISystem(Base):
     )
     findings = relationship(
         "Finding", back_populates="ai_system", cascade="all, delete-orphan"
+    )
+    reviews = relationship(
+        "ReviewRecord", back_populates="ai_system", cascade="all, delete-orphan"
     )
     __table_args__ = (
         CheckConstraint(
@@ -147,6 +153,17 @@ class Assessment(Base):
     )
     findings = relationship(
         "Finding", back_populates="assessment", cascade="all, delete-orphan"
+    )
+    reviews = relationship(
+        "ReviewRecord",
+        back_populates="assessment",
+        foreign_keys="ReviewRecord.assessment_id",
+        cascade="all, delete-orphan",
+    )
+    reassessments = relationship(
+        "ReviewRecord",
+        back_populates="reassessment",
+        foreign_keys="ReviewRecord.reassessment_id",
     )
     __table_args__ = (
         CheckConstraint(
@@ -278,4 +295,43 @@ class Finding(Base):
         Index("ix_findings_user_status", "user_id", "status"),
         Index("ix_findings_user_priority", "user_id", "priority"),
         Index("ix_findings_system_due_date", "ai_system_id", "due_date"),
+    )
+
+
+class ReviewRecord(Base):
+    """A human review decision and optional reassessment link for an AI system."""
+
+    __tablename__ = "review_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    ai_system_id = Column(Integer, ForeignKey("ai_systems.id"), nullable=False)
+    assessment_id = Column(Integer, ForeignKey("assessments.id"), nullable=True)
+    reassessment_id = Column(Integer, ForeignKey("assessments.id"), nullable=True)
+    reviewer = Column(String(255), nullable=False)
+    review_date = Column(Date, nullable=False)
+    decision = Column(String(24), nullable=False)
+    material_change = Column(Boolean, nullable=False, default=False)
+    change_summary = Column(Text, nullable=True)
+    next_review_date = Column(Date, nullable=True)
+    reviewer_notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = relationship("User", back_populates="reviews")
+    ai_system = relationship("AISystem", back_populates="reviews")
+    assessment = relationship(
+        "Assessment", back_populates="reviews", foreign_keys=[assessment_id]
+    )
+    reassessment = relationship(
+        "Assessment", back_populates="reassessments", foreign_keys=[reassessment_id]
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "decision IN ('continue', 'reassess', 'pause', 'retire')",
+            name="ck_review_records_decision",
+        ),
+        Index("ix_review_records_system_date", "ai_system_id", "review_date"),
+        Index("ix_review_records_user_decision", "user_id", "decision"),
+        Index("ix_review_records_user_material_change", "user_id", "material_change"),
     )

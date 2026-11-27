@@ -60,6 +60,16 @@
 - [x] Findings remain working governance records and do not claim legal conclusions, certification, objective safety, or automated risk decisions.
 - [x] Backend regression tests and frontend/API contract coverage pass: backend `33 passed`, frontend `20 passed`, lint passed, and production build passed.
 
+## Phase 5E: Human review and reassessment workflow
+
+- [x] An authenticated user can record a review for an owned AI system with reviewer, review date, human decision, material-change flag, change summary, next review date, reviewer notes, and optional reviewed assessment.
+- [x] A review can optionally link a reassessment assessment from the same AI-system context, and review decisions are validated and owner-scoped.
+- [x] The API rejects inaccessible or context-mismatched system, assessment, and reassessment links with `404` and supports filters for system, decision, and material change.
+- [x] The migration is SQLite-development and PostgreSQL-deployment compatible and preserves existing records; disposable SQLite upgrade reached revision `0007`.
+- [x] The frontend provides a low-cognitive-load review page that makes the human decision, material change, reassessment link, and next review date visible.
+- [x] The workflow records human review context only and does not automate legal, certification, safety, or high-impact decisions.
+- [x] Backend regression tests and frontend/API contract coverage pass: backend `36 passed`, frontend `22 passed`, lint passed, and production build passed.
+
 - [ ] Architecture Decision Records document authentication storage, PostgreSQL/Docker boundaries, assessment versioning, PWA caching, and the non-certification product boundary.
 - [ ] Security documentation distinguishes implemented controls from recommended deployment controls and matches the PostgreSQL production path.
 - [ ] CI includes secret/database artifact checks and a production-image or disposable-Compose smoke gate where the runner supports it.
