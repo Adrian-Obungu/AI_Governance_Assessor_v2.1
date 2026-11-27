@@ -202,6 +202,42 @@ def test_get_assessment_summary(client, test_user):
     assert "category_scores" in data
 
 
+def test_complete_assessment_status_and_summary(client, test_user):
+    """Completing every live questionnaire category marks the assessment complete."""
+    headers = {"Authorization": f"Bearer {test_user['token']}"}
+    create_response = client.post(
+        "/assessments",
+        json={"title": "Complete assessment regression"},
+        headers=headers,
+    )
+    assessment_id = create_response.json()["id"]
+    questionnaires = client.get("/assessments/questionnaires").json()
+
+    for questionnaire in questionnaires:
+        answers = {
+            question["id"]: max(option["value"] for option in question["options"])
+            for question in questionnaire["questions"]
+        }
+        response = client.post(
+            f"/assessments/{assessment_id}/answers",
+            json={"category": questionnaire["category"], "answers": answers},
+            headers=headers,
+        )
+        assert response.status_code == 200
+
+    assessment_response = client.get(f"/assessments/{assessment_id}", headers=headers)
+    assert assessment_response.status_code == 200
+    assessment = assessment_response.json()
+    assert assessment["status"] == "completed"
+    assert len(assessment["results"]) == len(questionnaires)
+
+    summary_response = client.get(
+        f"/assessments/{assessment_id}/summary", headers=headers
+    )
+    assert summary_response.status_code == 200
+    assert len(summary_response.json()["category_scores"]) == len(questionnaires)
+
+
 def test_export_csv(client, test_user):
     """Test CSV export"""
     # Create assessment
