@@ -40,6 +40,15 @@
 - [x] Signals are operational governance records only: the feature does not claim legal incident classification, certification, objective safety, automated triage, or autonomous high-impact decisions.
 - [x] Backend regression tests and frontend/API contract coverage pass, together with Black, Ruff, ESLint, TypeScript/Vite production build, `git diff --check`, and migration validation.
 
+## Phase 5G: Consolidated governance activity view
+
+- [x] An authenticated user can view a derived timeline combining their AI-system inventory, linked assessments, evidence records, findings, human reviews, and operational signals.
+- [x] Activity events expose source type, source identifier, AI-system context, occurred date/time, title, summary, and relevant status, priority, or severity without duplicating records in a new database table.
+- [x] The activity API is read-only, ownership-scoped, supports AI-system and source-type filters, and returns no events for another user’s system.
+- [x] The frontend provides a low-cognitive-load timeline with a system filter, source filter, clear event labels, and an explanation that it is a derived activity view.
+- [x] The view preserves human-led governance boundaries and does not infer legal conclusions, objective safety, certification, or automated decisions.
+- [x] Backend and frontend contract tests, formatting, lint, production build, and `git diff --check` pass.
+
 ## Phase 5B: Assessment context linkage
 
 - [x] An assessment may optionally reference one AI-system inventory record while existing unlinked assessments remain valid.

@@ -155,3 +155,17 @@ export interface OperationalSignal {
     created_at: string;
     updated_at: string;
 }
+
+export type ActivitySource = 'inventory' | 'assessment' | 'evidence' | 'finding' | 'review' | 'signal';
+
+export interface ActivityEvent {
+    source_type: ActivitySource;
+    source_id: number;
+    ai_system_id: number;
+    occurred_at: string;
+    title: string;
+    summary: string;
+    status?: string;
+    priority?: string;
+    severity?: string;
+}

@@ -10,6 +10,7 @@ import EvidencePage from './pages/EvidencePage';
 import FindingsPage from './pages/FindingsPage';
 import ReviewsPage from './pages/ReviewsPage';
 import SignalsPage from './pages/SignalsPage';
+import ActivityPage from './pages/ActivityPage';
 import './index.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -83,6 +84,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <SignalsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/activity"
+            element={
+              <ProtectedRoute>
+                <ActivityPage />
               </ProtectedRoute>
             }
           />
