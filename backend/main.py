@@ -15,6 +15,7 @@ from backend.evidence.router import router as evidence_router
 from backend.findings.router import router as findings_router
 from backend.inventory.router import router as inventory_router
 from backend.reviews.router import router as reviews_router
+from backend.signals.router import router as signals_router
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -76,6 +77,7 @@ app.include_router(evidence_router)
 app.include_router(findings_router)
 app.include_router(inventory_router)
 app.include_router(reviews_router)
+app.include_router(signals_router)
 
 
 @app.get("/")

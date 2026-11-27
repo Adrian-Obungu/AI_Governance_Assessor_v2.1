@@ -50,6 +50,9 @@ class User(Base):
     reviews = relationship(
         "ReviewRecord", back_populates="user", cascade="all, delete-orphan"
     )
+    operational_signals = relationship(
+        "OperationalSignal", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class AISystem(Base):
@@ -81,6 +84,9 @@ class AISystem(Base):
     )
     reviews = relationship(
         "ReviewRecord", back_populates="ai_system", cascade="all, delete-orphan"
+    )
+    operational_signals = relationship(
+        "OperationalSignal", back_populates="ai_system", cascade="all, delete-orphan"
     )
     __table_args__ = (
         CheckConstraint(
@@ -283,6 +289,9 @@ class Finding(Base):
     ai_system = relationship("AISystem", back_populates="findings")
     evidence = relationship("EvidenceRecord", back_populates="findings")
     assessment = relationship("Assessment", back_populates="findings")
+    operational_signals = relationship(
+        "OperationalSignal", back_populates="finding", cascade="all, delete-orphan"
+    )
     __table_args__ = (
         CheckConstraint(
             "priority IN ('low', 'medium', 'high', 'critical')",
@@ -326,6 +335,9 @@ class ReviewRecord(Base):
     reassessment = relationship(
         "Assessment", back_populates="reassessments", foreign_keys=[reassessment_id]
     )
+    operational_signals = relationship(
+        "OperationalSignal", back_populates="review", cascade="all, delete-orphan"
+    )
     __table_args__ = (
         CheckConstraint(
             "decision IN ('continue', 'reassess', 'pause', 'retire')",
@@ -334,4 +346,50 @@ class ReviewRecord(Base):
         Index("ix_review_records_system_date", "ai_system_id", "review_date"),
         Index("ix_review_records_user_decision", "user_id", "decision"),
         Index("ix_review_records_user_material_change", "user_id", "material_change"),
+    )
+
+
+class OperationalSignal(Base):
+    """A user-recorded incident, feedback item, or material system change."""
+
+    __tablename__ = "operational_signals"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    ai_system_id = Column(Integer, ForeignKey("ai_systems.id"), nullable=False)
+    finding_id = Column(Integer, ForeignKey("findings.id"), nullable=True)
+    review_id = Column(Integer, ForeignKey("review_records.id"), nullable=True)
+    signal_type = Column(String(24), nullable=False)
+    severity = Column(String(20), nullable=False, default="medium")
+    status = Column(String(24), nullable=False, default="new")
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=False)
+    reported_by = Column(String(255), nullable=False)
+    reported_on = Column(Date, nullable=False)
+    owner = Column(String(255), nullable=True)
+    response_action = Column(Text, nullable=True)
+    reviewer_notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = relationship("User", back_populates="operational_signals")
+    ai_system = relationship("AISystem", back_populates="operational_signals")
+    finding = relationship("Finding")
+    review = relationship("ReviewRecord", back_populates="operational_signals")
+    __table_args__ = (
+        CheckConstraint(
+            "signal_type IN ('incident', 'feedback', 'material_change')",
+            name="ck_operational_signals_type",
+        ),
+        CheckConstraint(
+            "severity IN ('low', 'medium', 'high', 'critical')",
+            name="ck_operational_signals_severity",
+        ),
+        CheckConstraint(
+            "status IN ('new', 'triaged', 'investigating', 'closed')",
+            name="ck_operational_signals_status",
+        ),
+        Index("ix_operational_signals_system_date", "ai_system_id", "reported_on"),
+        Index("ix_operational_signals_user_status", "user_id", "status"),
+        Index("ix_operational_signals_user_severity", "user_id", "severity"),
     )

@@ -54,10 +54,7 @@ export interface Question {
     id: string;
     text: string;
     weight: number;
-    options: {
-        value: number;
-        label: string;
-    }[];
+    options: { value: number; label: string }[];
 }
 
 export interface Questionnaire {
@@ -130,6 +127,30 @@ export interface ReviewRecord {
     material_change: boolean;
     change_summary?: string;
     next_review_date?: string;
+    reviewer_notes?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export type SignalType = 'incident' | 'feedback' | 'material_change';
+export type SignalSeverity = 'low' | 'medium' | 'high' | 'critical';
+export type SignalStatus = 'new' | 'triaged' | 'investigating' | 'closed';
+
+export interface OperationalSignal {
+    id: number;
+    user_id: number;
+    ai_system_id: number;
+    finding_id?: number;
+    review_id?: number;
+    signal_type: SignalType;
+    severity: SignalSeverity;
+    status: SignalStatus;
+    title: string;
+    description: string;
+    reported_by: string;
+    reported_on: string;
+    owner?: string;
+    response_action?: string;
     reviewer_notes?: string;
     created_at: string;
     updated_at: string;
