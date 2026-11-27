@@ -1,5 +1,5 @@
 import { ApiError, classifyHttpStatus, classifyRequestFailure } from './apiErrors';
-import type { AISystem, Assessment, AssessmentResult, AssessmentSummary, EvidenceRecord, EvidenceStatus, Questionnaire } from '../types';
+import type { AISystem, Assessment, AssessmentResult, AssessmentSummary, EvidenceRecord, EvidenceStatus, FindingPriority, FindingRecord, FindingStatus, Questionnaire } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -113,6 +113,23 @@ export const evidenceAPI = {
         method: 'POST', token, body: JSON.stringify({ ...payload, assessment_id: payload.assessment_id ?? null }),
     }),
     update: (token: string, id: number, payload: Partial<Omit<EvidenceRecord, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => request<EvidenceRecord>(`/evidence/${id}`, {
+        method: 'PUT', token, body: JSON.stringify(payload),
+    }),
+};
+
+export const findingsAPI = {
+    list: (token: string, filters: { aiSystemId?: number; status?: FindingStatus; priority?: FindingPriority } = {}) => {
+        const params = new URLSearchParams();
+        if (filters.aiSystemId) params.set('ai_system_id', String(filters.aiSystemId));
+        if (filters.status) params.set('status', filters.status);
+        if (filters.priority) params.set('priority', filters.priority);
+        const query = params.toString();
+        return request<FindingRecord[]>(`/findings${query ? `?${query}` : ''}`, { token });
+    },
+    create: (token: string, payload: Omit<FindingRecord, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => request<FindingRecord>('/findings', {
+        method: 'POST', token, body: JSON.stringify({ ...payload, assessment_id: payload.assessment_id ?? null, due_date: payload.due_date ?? null }),
+    }),
+    update: (token: string, id: number, payload: Partial<Omit<FindingRecord, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => request<FindingRecord>(`/findings/${id}`, {
         method: 'PUT', token, body: JSON.stringify(payload),
     }),
 };

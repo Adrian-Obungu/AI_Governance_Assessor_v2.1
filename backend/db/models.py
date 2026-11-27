@@ -44,6 +44,9 @@ class User(Base):
     evidence_records = relationship(
         "EvidenceRecord", back_populates="user", cascade="all, delete-orphan"
     )
+    findings = relationship(
+        "Finding", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class AISystem(Base):
@@ -69,6 +72,9 @@ class AISystem(Base):
     user = relationship("User", back_populates="ai_systems")
     evidence_records = relationship(
         "EvidenceRecord", back_populates="ai_system", cascade="all, delete-orphan"
+    )
+    findings = relationship(
+        "Finding", back_populates="ai_system", cascade="all, delete-orphan"
     )
     __table_args__ = (
         CheckConstraint(
@@ -138,6 +144,9 @@ class Assessment(Base):
     )
     evidence_records = relationship(
         "EvidenceRecord", back_populates="assessment", cascade="all, delete-orphan"
+    )
+    findings = relationship(
+        "Finding", back_populates="assessment", cascade="all, delete-orphan"
     )
     __table_args__ = (
         CheckConstraint(
@@ -214,6 +223,9 @@ class EvidenceRecord(Base):
     user = relationship("User", back_populates="evidence_records")
     ai_system = relationship("AISystem", back_populates="evidence_records")
     assessment = relationship("Assessment", back_populates="evidence_records")
+    findings = relationship(
+        "Finding", back_populates="evidence", cascade="all, delete-orphan"
+    )
     __table_args__ = (
         CheckConstraint(
             "evidence_type IN ('policy', 'procedure', 'contract', 'technical_document', 'training_record', 'audit_record', 'review_note', 'other')",
@@ -226,4 +238,44 @@ class EvidenceRecord(Base):
         Index("ix_evidence_records_user_review_date", "user_id", "review_date"),
         Index("ix_evidence_records_user_status", "user_id", "status"),
         Index("ix_evidence_records_system_status", "ai_system_id", "status"),
+    )
+
+
+class Finding(Base):
+    """An owned governance finding with one accountable remediation action."""
+
+    __tablename__ = "findings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    ai_system_id = Column(Integer, ForeignKey("ai_systems.id"), nullable=False)
+    evidence_id = Column(Integer, ForeignKey("evidence_records.id"), nullable=False)
+    assessment_id = Column(Integer, ForeignKey("assessments.id"), nullable=True)
+    title = Column(String(255), nullable=False)
+    conclusion = Column(Text, nullable=False)
+    priority = Column(String(20), nullable=False, default="medium")
+    owner = Column(String(255), nullable=False)
+    remediation_action = Column(Text, nullable=False)
+    due_date = Column(Date, nullable=True)
+    status = Column(String(24), nullable=False, default="open")
+    reviewer_notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = relationship("User", back_populates="findings")
+    ai_system = relationship("AISystem", back_populates="findings")
+    evidence = relationship("EvidenceRecord", back_populates="findings")
+    assessment = relationship("Assessment", back_populates="findings")
+    __table_args__ = (
+        CheckConstraint(
+            "priority IN ('low', 'medium', 'high', 'critical')",
+            name="ck_findings_priority",
+        ),
+        CheckConstraint(
+            "status IN ('open', 'in_progress', 'resolved', 'accepted_risk')",
+            name="ck_findings_status",
+        ),
+        Index("ix_findings_user_status", "user_id", "status"),
+        Index("ix_findings_user_priority", "user_id", "priority"),
+        Index("ix_findings_system_due_date", "ai_system_id", "due_date"),
     )
