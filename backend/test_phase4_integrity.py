@@ -18,8 +18,14 @@ def _privacy_answers():
 
 
 def test_result_schema_has_phase4_metadata_and_unique_constraint(client, test_db):
-    result_columns = {column["name"] for column in inspect(engine).get_columns("assessment_results")}
-    assert {"questionnaire_version", "questionnaire_snapshot", "scoring_version"}.issubset(result_columns)
+    result_columns = {
+        column["name"] for column in inspect(engine).get_columns("assessment_results")
+    }
+    assert {
+        "questionnaire_version",
+        "questionnaire_snapshot",
+        "scoring_version",
+    }.issubset(result_columns)
 
     unique_constraints = inspect(engine).get_unique_constraints("assessment_results")
     assert any(
@@ -34,8 +40,12 @@ def test_repeating_a_category_submission_updates_one_result(client, test_user):
     assessment_id = _create_assessment(client, test_user["token"])
     payload = {"category": "data_privacy", "answers": _privacy_answers()}
 
-    first = client.post(f"/assessments/{assessment_id}/answers", json=payload, headers=headers)
-    second = client.post(f"/assessments/{assessment_id}/answers", json=payload, headers=headers)
+    first = client.post(
+        f"/assessments/{assessment_id}/answers", json=payload, headers=headers
+    )
+    second = client.post(
+        f"/assessments/{assessment_id}/answers", json=payload, headers=headers
+    )
     assert first.status_code == 200
     assert second.status_code == 200
 

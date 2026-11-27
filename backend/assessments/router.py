@@ -26,6 +26,7 @@ from backend.assessments.schemas import (
 from backend.auth.dependencies import get_current_user
 from backend.db.database import get_db
 from backend.db.models import User
+from backend.inventory.crud import get_user_ai_system
 
 router = APIRouter(prefix="/assessments", tags=["assessments"])
 
@@ -63,8 +64,18 @@ async def create_new_assessment(
     db: Session = Depends(get_db),
 ):
     """Create a new assessment"""
+    if assessment.ai_system_id is not None and not get_user_ai_system(
+        db, assessment.ai_system_id, current_user.id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="AI system not found"
+        )
     db_assessment = create_assessment(
-        db, current_user.id, assessment.title, assessment.description
+        db,
+        current_user.id,
+        assessment.title,
+        assessment.description,
+        assessment.ai_system_id,
     )
     return db_assessment
 
@@ -111,6 +122,12 @@ async def update_assessment_detail(
         )
 
     requested_status = assessment_update.status
+    if assessment_update.ai_system_id is not None and not get_user_ai_system(
+        db, assessment_update.ai_system_id, current_user.id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="AI system not found"
+        )
     if requested_status is not None:
         allowed_next = {
             "draft": {"draft", "in_progress"},

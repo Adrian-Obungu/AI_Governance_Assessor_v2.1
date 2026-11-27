@@ -7,6 +7,7 @@ Usage from the repository root:
 The command is deliberately fail-closed for unknown categories and duplicate
 assessment/category pairs. Resolve those rows before running the write mode.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -32,26 +33,26 @@ def build_parser() -> argparse.ArgumentParser:
 def run(database_url: str, dry_run: bool) -> int:
     engine = create_engine(database_url)
     with Session(engine) as db:
-        duplicate_rows = db.execute(
-            text(
-                """
+        duplicate_rows = db.execute(text("""
                 SELECT assessment_id, category, COUNT(*) AS count
                 FROM assessment_results
                 GROUP BY assessment_id, category
                 HAVING COUNT(*) > 1
-                """
-            )
-        ).all()
+                """)).all()
         if duplicate_rows:
             raise RuntimeError(
                 "Duplicate assessment/category rows exist; clean them before backfill: "
                 f"{duplicate_rows}"
             )
 
-        rows = db.execute(
-            text("SELECT id, category FROM assessment_results ORDER BY id")
-        ).mappings().all()
-        unknown = sorted({row["category"] for row in rows if row["category"] not in QUESTIONNAIRES})
+        rows = (
+            db.execute(text("SELECT id, category FROM assessment_results ORDER BY id"))
+            .mappings()
+            .all()
+        )
+        unknown = sorted(
+            {row["category"] for row in rows if row["category"] not in QUESTIONNAIRES}
+        )
         if unknown:
             raise RuntimeError(f"Unknown assessment result categories: {unknown}")
 
@@ -70,15 +71,13 @@ def run(database_url: str, dry_run: bool) -> int:
             if dry_run:
                 continue
             db.execute(
-                text(
-                    """
+                text("""
                     UPDATE assessment_results
                        SET questionnaire_version = :questionnaire_version,
                            questionnaire_snapshot = :questionnaire_snapshot,
                            scoring_version = :scoring_version
                      WHERE id = :id
-                    """
-                ),
+                    """),
                 {
                     "id": row["id"],
                     "questionnaire_version": QUESTIONNAIRE_VERSION,

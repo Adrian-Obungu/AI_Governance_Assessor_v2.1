@@ -40,7 +40,9 @@ async def get_inventory_system(
 ):
     system = get_user_ai_system(db, system_id, current_user.id)
     if not system:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="AI system not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="AI system not found"
+        )
     return system
 
 
@@ -53,5 +55,7 @@ async def update_inventory_system(
 ):
     system = get_user_ai_system(db, system_id, current_user.id)
     if not system:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="AI system not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="AI system not found"
+        )
     return update_ai_system(db, system, **payload.model_dump(exclude_unset=True))

@@ -1,6 +1,3 @@
-from datetime import date
-
-
 def inventory_payload(name="Customer support assistant"):
     return {
         "name": name,
@@ -62,10 +59,15 @@ def test_inventory_isolation_returns_not_found(client, test_user, second_user):
     created = client.post("/inventory", json=inventory_payload(), headers=first_headers)
     system_id = created.json()["id"]
 
-    assert client.get(f"/inventory/{system_id}", headers=second_headers).status_code == 404
-    assert client.put(
-        f"/inventory/{system_id}",
-        json={"name": "Attempted takeover"},
-        headers=second_headers,
-    ).status_code == 404
+    assert (
+        client.get(f"/inventory/{system_id}", headers=second_headers).status_code == 404
+    )
+    assert (
+        client.put(
+            f"/inventory/{system_id}",
+            json={"name": "Attempted takeover"},
+            headers=second_headers,
+        ).status_code
+        == 404
+    )
     assert client.get("/inventory", headers=second_headers).json() == []

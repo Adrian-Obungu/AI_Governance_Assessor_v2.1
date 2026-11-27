@@ -38,7 +38,9 @@ class User(Base):
     assessments = relationship("Assessment", back_populates="user")
     failed_logins = relationship("FailedLogin", back_populates="user")
     password_resets = relationship("PasswordReset", back_populates="user")
-    ai_systems = relationship("AISystem", back_populates="user", cascade="all, delete-orphan")
+    ai_systems = relationship(
+        "AISystem", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class AISystem(Base):
@@ -109,16 +111,22 @@ class Assessment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    ai_system_id = Column(
+        Integer, ForeignKey("ai_systems.id"), nullable=True, index=True
+    )
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     schema_version = Column(String(32), default="1.0", nullable=False)
-    status = Column(String(20), default="draft", nullable=False)  # draft, in_progress, completed
+    status = Column(
+        String(20), default="draft", nullable=False
+    )  # draft, in_progress, completed
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
 
     # Relationships
     user = relationship("User", back_populates="assessments")
+    ai_system = relationship("AISystem")
     results = relationship(
         "AssessmentResult", back_populates="assessment", cascade="all, delete-orphan"
     )

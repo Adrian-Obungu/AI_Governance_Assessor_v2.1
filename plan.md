@@ -82,3 +82,9 @@ Brand voice: “Start with the system you need to understand.” and “Capture 
 ## Validation and delivery
 
 Run backend inventory tests and the full backend suite with the temporary `.env` protection already established for Windows. Run frontend unit tests, lint, and production build. Add a focused mocked API contract test for inventory creation/listing. Do not run database write mode against staging as part of this feature; the migration remains subject to the existing manual deployment process.
+
+## Phase 5B: Link assessments to inventory context
+
+The next vertical slice adds an optional `ai_system_id` to an assessment. New assessments may reference one AI-system record owned by the authenticated user; existing assessments remain valid with no linked system. The API must reject another user’s system with `404`, preserve ownership boundaries, and expose the linked system summary in assessment responses. The dashboard creation flow will offer the user’s inventory records as an optional context choice, while the questionnaire and scoring behavior remain unchanged.
+
+This slice excludes evidence, findings, remediation, automated recommendations, and hosted sensitive-data deployment. It will use a nullable foreign key, ownership-aware validation, a SQLite/PostgreSQL-compatible migration, backend regression tests, and a frontend API/UI contract test.

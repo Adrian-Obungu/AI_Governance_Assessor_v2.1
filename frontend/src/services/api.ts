@@ -76,8 +76,8 @@ export const authAPI = {
 
 export const assessmentAPI = {
     getQuestionnaires: () => request<Questionnaire[]>('/assessments/questionnaires'),
-    createAssessment: (token: string, title: string, description?: string) => request<Assessment>('/assessments', {
-        method: 'POST', token, body: JSON.stringify({ title, description }),
+    createAssessment: (token: string, title: string, description?: string, aiSystemId?: number) => request<Assessment>('/assessments', {
+        method: 'POST', token, body: JSON.stringify({ title, description, ai_system_id: aiSystemId ?? null }),
     }),
     listAssessments: (token: string) => request<Assessment[]>('/assessments', { token }),
     getAssessment: (token: string, id: number) => request<Assessment>(`/assessments/${id}`, { token }),

@@ -31,6 +31,15 @@
 
 ## Engineering stewardship
 
+## Phase 5B: Assessment context linkage
+
+- [x] An assessment may optionally reference one AI-system inventory record while existing unlinked assessments remain valid.
+- [x] The backend validates that the selected inventory record belongs to the authenticated user and returns `404` for cross-user linkage attempts.
+- [x] Assessment responses expose the linked inventory identifier and basic system context without changing questionnaire scoring behavior.
+- [x] The migration is SQLite-development and PostgreSQL-deployment compatible and preserves existing assessment rows; disposable SQLite upgrade reached revision `0004`.
+- [x] The dashboard lets a user choose an inventory system when starting an assessment, with a clear “continue without linking” option.
+- [x] Backend regression tests and frontend/API contract coverage pass: backend `27 passed`, frontend `16 passed`, lint passed, and production build passed.
+
 - [ ] Architecture Decision Records document authentication storage, PostgreSQL/Docker boundaries, assessment versioning, PWA caching, and the non-certification product boundary.
 - [ ] Security documentation distinguishes implemented controls from recommended deployment controls and matches the PostgreSQL production path.
 - [ ] CI includes secret/database artifact checks and a production-image or disposable-Compose smoke gate where the runner supports it.

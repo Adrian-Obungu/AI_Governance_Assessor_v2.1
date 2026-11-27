@@ -11,6 +11,7 @@ class AssessmentCreate(BaseModel):
 
     title: str = Field(..., min_length=1, max_length=255)
     description: str | None = None
+    ai_system_id: int | None = Field(None, ge=1)
 
 
 class AssessmentUpdate(BaseModel):
@@ -19,6 +20,7 @@ class AssessmentUpdate(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = None
     status: Literal["draft", "in_progress", "completed"] | None = None
+    ai_system_id: int | None = Field(None, ge=1)
 
 
 class CategoryAnswers(BaseModel):
@@ -43,11 +45,22 @@ class AssessmentResultResponse(BaseModel):
         from_attributes = True
 
 
+class AssessmentSystemContext(BaseModel):
+    id: int
+    name: str
+    purpose: str
+
+    class Config:
+        from_attributes = True
+
+
 class AssessmentResponse(BaseModel):
     """Response schema for assessment"""
 
     id: int
     user_id: int
+    ai_system_id: int | None
+    ai_system: AssessmentSystemContext | None = None
     title: str
     description: str | None
     schema_version: str
