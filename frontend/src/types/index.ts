@@ -115,3 +115,22 @@ export interface FindingRecord {
     created_at: string;
     updated_at: string;
 }
+
+export type ReviewDecision = 'continue' | 'reassess' | 'pause' | 'retire';
+
+export interface ReviewRecord {
+    id: number;
+    user_id: number;
+    ai_system_id: number;
+    assessment_id?: number;
+    reassessment_id?: number;
+    reviewer: string;
+    review_date: string;
+    decision: ReviewDecision;
+    material_change: boolean;
+    change_summary?: string;
+    next_review_date?: string;
+    reviewer_notes?: string;
+    created_at: string;
+    updated_at: string;
+}

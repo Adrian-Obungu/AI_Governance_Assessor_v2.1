@@ -184,6 +184,14 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <button type="button" onClick={() => navigate('/findings')} className="btn-secondary whitespace-nowrap">Open findings</button>
                 </section>
+                <section className="card mb-8 flex flex-col gap-4 border-l-4 border-violet-500 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p className="text-sm font-semibold uppercase tracking-wide text-violet-700">Step 5 · Review</p>
+                        <h2 className="mt-1 text-xl font-bold text-gray-800">Make review decisions traceable.</h2>
+                        <p className="mt-1 max-w-2xl text-gray-600">Record who reviewed the system, what changed, whether to reassess, and when the next review should happen.</p>
+                    </div>
+                    <button type="button" onClick={() => navigate('/reviews')} className="btn-secondary whitespace-nowrap">Open reviews</button>
+                </section>
                 <div className="flex justify-between items-center mb-6">
                     <div>
                         <h2 className="text-3xl font-bold text-gray-800">My Assessments</h2>

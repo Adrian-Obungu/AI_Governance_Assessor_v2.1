@@ -108,3 +108,13 @@ The frontend findings workspace follows the same calm operational pattern as inv
 Implementation files are `backend/findings/` for schemas, ownership-scoped CRUD, and routes; `backend/alembic/versions/0006_findings_remediation.py` for the portable migration; `backend/test_findings.py` for authorization and context-link coverage; `frontend/src/pages/FindingsPage.tsx` for the guided workspace; and the shared frontend API/types, protected route, dashboard entry point, route manifest, and API contract test.
 
 Phase 5D validation completed with the full backend suite (`33 passed`), frontend tests (`20 passed`), Black, Ruff, ESLint, TypeScript/Vite production build, `git diff --check`, and a disposable SQLite migration through revision `0006`.
+
+## Phase 5E: Human review and reassessment workflow
+
+This slice adds a review record for a human decision about an AI system. It captures the reviewer, review date, decision (`continue`, `reassess`, `pause`, or `retire`), material-change flag, change summary, next review date, reviewer notes, and optional links to the assessment being reviewed and a follow-up reassessment. Linked assessments must belong to the same user and AI-system context.
+
+The frontend review workspace keeps the next action clear: select the system, record the human decision, explain any material change, optionally link the reassessment assessment, and set the next review date. It records review context and traceability only; it does not automate legal, certification, safety, or high-impact decisions.
+
+Implementation files are `backend/reviews/` for schemas, ownership-scoped CRUD, and routes; `backend/alembic/versions/0007_review_reassessment.py` for the portable migration; `backend/test_reviews.py` for authorization and context-link coverage; `frontend/src/pages/ReviewsPage.tsx` for the guided workspace; and the shared frontend API/types, protected route, dashboard entry point, route manifest, and API contract test.
+
+Phase 5E validation completed with the full backend suite (`36 passed`), frontend tests (`22 passed`), Black, Ruff, ESLint, TypeScript/Vite production build, `git diff --check`, and a disposable SQLite migration through revision `0007`.
