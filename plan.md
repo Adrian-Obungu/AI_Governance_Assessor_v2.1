@@ -88,3 +88,13 @@ Run backend inventory tests and the full backend suite with the temporary `.env`
 The next vertical slice adds an optional `ai_system_id` to an assessment. New assessments may reference one AI-system record owned by the authenticated user; existing assessments remain valid with no linked system. The API must reject another user’s system with `404`, preserve ownership boundaries, and expose the linked system summary in assessment responses. The dashboard creation flow will offer the user’s inventory records as an optional context choice, while the questionnaire and scoring behavior remain unchanged.
 
 This slice excludes evidence, findings, remediation, automated recommendations, and hosted sensitive-data deployment. It will use a nullable foreign key, ownership-aware validation, a SQLite/PostgreSQL-compatible migration, backend regression tests, and a frontend API/UI contract test.
+
+## Phase 5C: Evidence records without file uploads
+
+The next vertical slice adds structured evidence metadata so users can record what supports a governance review without introducing document storage or upload risk. An evidence record belongs to the authenticated user and must link to an owned AI system; it may optionally link to an owned assessment. It captures title, explanation, evidence type, source/location, owner, collection date, review date, status, and reviewer notes.
+
+The first UI is a mobile-friendly evidence workspace with a short form, status and review-date visibility, and filters by AI system and status. “Source/location” is a URL or human-readable reference only; this slice does not upload, scan, OCR, classify, or retain files. Evidence is recorded supporting context, not verified proof, legal advice, certification, or an automated compliance conclusion.
+
+Implementation files for this slice are `backend/evidence/` for schemas, ownership-scoped CRUD, and routes; `backend/alembic/versions/0005_evidence_records.py` for the portable migration; `backend/test_evidence.py` for API and isolation coverage; `frontend/src/pages/EvidencePage.tsx` for the guided workspace; and the shared frontend API/types, protected route, dashboard entry point, route manifest, and API contract test.
+
+Phase 5C validation completed with the full backend suite (`30 passed`), frontend tests (`18 passed`), Black, Ruff, ESLint, TypeScript/Vite production build, `git diff --check`, and a disposable SQLite migration through revision `0005`.

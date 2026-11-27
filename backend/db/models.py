@@ -41,6 +41,9 @@ class User(Base):
     ai_systems = relationship(
         "AISystem", back_populates="user", cascade="all, delete-orphan"
     )
+    evidence_records = relationship(
+        "EvidenceRecord", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class AISystem(Base):
@@ -64,6 +67,9 @@ class AISystem(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = relationship("User", back_populates="ai_systems")
+    evidence_records = relationship(
+        "EvidenceRecord", back_populates="ai_system", cascade="all, delete-orphan"
+    )
     __table_args__ = (
         CheckConstraint(
             "lifecycle_stage IN ('discovery', 'pilot', 'in_production', 'retired')",
@@ -130,6 +136,9 @@ class Assessment(Base):
     results = relationship(
         "AssessmentResult", back_populates="assessment", cascade="all, delete-orphan"
     )
+    evidence_records = relationship(
+        "EvidenceRecord", back_populates="assessment", cascade="all, delete-orphan"
+    )
     __table_args__ = (
         CheckConstraint(
             "status IN ('draft', 'in_progress', 'completed')",
@@ -178,4 +187,43 @@ class AssessmentResult(Base):
             "category IN ('data_privacy', 'model_risk', 'ethics', 'compliance')",
             name="ck_assessment_results_category",
         ),
+    )
+
+
+class EvidenceRecord(Base):
+    """Metadata describing user-recorded supporting context for governance work."""
+
+    __tablename__ = "evidence_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    ai_system_id = Column(Integer, ForeignKey("ai_systems.id"), nullable=False)
+    assessment_id = Column(Integer, ForeignKey("assessments.id"), nullable=True)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=False)
+    evidence_type = Column(String(40), nullable=False)
+    source_location = Column(String(1000), nullable=True)
+    owner = Column(String(255), nullable=True)
+    collected_on = Column(Date, nullable=True)
+    review_date = Column(Date, nullable=True)
+    status = Column(String(32), nullable=False, default="draft")
+    reviewer_notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = relationship("User", back_populates="evidence_records")
+    ai_system = relationship("AISystem", back_populates="evidence_records")
+    assessment = relationship("Assessment", back_populates="evidence_records")
+    __table_args__ = (
+        CheckConstraint(
+            "evidence_type IN ('policy', 'procedure', 'contract', 'technical_document', 'training_record', 'audit_record', 'review_note', 'other')",
+            name="ck_evidence_records_type",
+        ),
+        CheckConstraint(
+            "status IN ('draft', 'submitted', 'reviewed', 'needs_update')",
+            name="ck_evidence_records_status",
+        ),
+        Index("ix_evidence_records_user_review_date", "user_id", "review_date"),
+        Index("ix_evidence_records_user_status", "user_id", "status"),
+        Index("ix_evidence_records_system_status", "ai_system_id", "status"),
     )

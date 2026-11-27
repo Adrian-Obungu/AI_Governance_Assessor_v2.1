@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import AssessmentPage from './pages/AssessmentPage';
 import ReportPage from './pages/ReportPage';
 import InventoryPage from './pages/InventoryPage';
+import EvidencePage from './pages/EvidencePage';
 import './index.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -47,6 +48,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <InventoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/evidence"
+            element={
+              <ProtectedRoute>
+                <EvidencePage />
               </ProtectedRoute>
             }
           />

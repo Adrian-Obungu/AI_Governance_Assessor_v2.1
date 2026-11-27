@@ -1,5 +1,5 @@
 import { ApiError, classifyHttpStatus, classifyRequestFailure } from './apiErrors';
-import type { AISystem, Assessment, AssessmentResult, AssessmentSummary, Questionnaire } from '../types';
+import type { AISystem, Assessment, AssessmentResult, AssessmentSummary, EvidenceRecord, EvidenceStatus, Questionnaire } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -97,6 +97,22 @@ export const inventoryAPI = {
         method: 'POST', token, body: JSON.stringify(payload),
     }),
     update: (token: string, id: number, payload: Partial<Omit<AISystem, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => request<AISystem>(`/inventory/${id}`, {
+        method: 'PUT', token, body: JSON.stringify(payload),
+    }),
+};
+
+export const evidenceAPI = {
+    list: (token: string, filters: { aiSystemId?: number; status?: EvidenceStatus } = {}) => {
+        const params = new URLSearchParams();
+        if (filters.aiSystemId) params.set('ai_system_id', String(filters.aiSystemId));
+        if (filters.status) params.set('status', filters.status);
+        const query = params.toString();
+        return request<EvidenceRecord[]>(`/evidence${query ? `?${query}` : ''}`, { token });
+    },
+    create: (token: string, payload: Omit<EvidenceRecord, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => request<EvidenceRecord>('/evidence', {
+        method: 'POST', token, body: JSON.stringify({ ...payload, assessment_id: payload.assessment_id ?? null }),
+    }),
+    update: (token: string, id: number, payload: Partial<Omit<EvidenceRecord, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => request<EvidenceRecord>(`/evidence/${id}`, {
         method: 'PUT', token, body: JSON.stringify(payload),
     }),
 };

@@ -168,6 +168,14 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <button type="button" onClick={() => navigate('/inventory')} className="btn-secondary whitespace-nowrap">Open AI-system inventory</button>
                 </section>
+                <section className="card mb-8 flex flex-col gap-4 border-l-4 border-amber-400 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p className="text-sm font-semibold uppercase tracking-wide text-amber-700">Step 3 · Evidence</p>
+                        <h2 className="mt-1 text-xl font-bold text-gray-800">Keep a register of supporting evidence.</h2>
+                        <p className="mt-1 max-w-2xl text-gray-600">Record policies, contracts, technical documents, and review notes with owners and review dates. The register stores metadata only.</p>
+                    </div>
+                    <button type="button" onClick={() => navigate('/evidence')} className="btn-secondary whitespace-nowrap">Open evidence register</button>
+                </section>
                 <div className="flex justify-between items-center mb-6">
                     <div>
                         <h2 className="text-3xl font-bold text-gray-800">My Assessments</h2>
