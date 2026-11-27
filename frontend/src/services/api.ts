@@ -1,5 +1,5 @@
 import { ApiError, classifyHttpStatus, classifyRequestFailure } from './apiErrors';
-import type { AISystem, Assessment, AssessmentResult, AssessmentSummary, EvidenceRecord, EvidenceStatus, FindingPriority, FindingRecord, FindingStatus, OperationalSignal, Questionnaire, ReviewDecision, ReviewRecord, SignalSeverity, SignalStatus, SignalType } from '../types';
+import type { ActivityEvent, ActivitySource, AISystem, Assessment, AssessmentResult, AssessmentSummary, EvidenceRecord, EvidenceStatus, FindingPriority, FindingRecord, FindingStatus, OperationalSignal, Questionnaire, ReviewDecision, ReviewRecord, SignalSeverity, SignalStatus, SignalType } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -167,6 +167,16 @@ export const signalsAPI = {
     update: (token: string, id: number, payload: Partial<Omit<OperationalSignal, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => request<OperationalSignal>(`/signals/${id}`, {
         method: 'PUT', token, body: JSON.stringify(payload),
     }),
+};
+
+export const activityAPI = {
+    list: (token: string, filters: { aiSystemId?: number; sourceType?: ActivitySource } = {}) => {
+        const params = new URLSearchParams();
+        if (filters.aiSystemId) params.set('ai_system_id', String(filters.aiSystemId));
+        if (filters.sourceType) params.set('source_type', filters.sourceType);
+        const query = params.toString();
+        return request<ActivityEvent[]>(`/activity${query ? `?${query}` : ''}`, { token });
+    },
 };
 
 export { request as apiRequest };

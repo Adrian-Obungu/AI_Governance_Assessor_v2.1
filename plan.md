@@ -130,3 +130,13 @@ The frontend adds a mobile-friendly operational signals workspace with a short i
 Implementation files are `backend/signals/` for schemas, ownership-scoped CRUD, and routes; `backend/alembic/versions/0008_operational_signals.py` for the portable migration; `backend/test_signals.py` for validation, filtering, context-link, and isolation coverage; `frontend/src/pages/SignalsPage.tsx` for the guided workspace; and the shared frontend API/types, protected route, dashboard entry point, and route manifest.
 
 Validation must include the full backend suite, focused signal tests, Black, Ruff, frontend Vitest, ESLint, TypeScript/Vite production build, `git diff --check`, and disposable SQLite migration through revision `0008`. Any staging write-mode migration or backfill remains a manual operator action and is not part of CI.
+
+## Phase 5G: Consolidated governance activity view
+
+This slice adds a derived, read-only activity timeline instead of another persistent case-management table. It combines records that already exist for a user-owned AI system: inventory context, linked assessments, metadata-only evidence, findings, human reviews, and operational signals. The API returns source type and identifier, system context, occurred timestamp, title, summary, and the relevant status, priority, or severity.
+
+The timeline is assembled at read time from existing ownership-scoped tables. It supports optional AI-system and source-type filters, returns an empty result when an inaccessible system identifier is supplied, and never exposes another user’s records. Dates that are stored as dates are normalized to the start of that day for consistent ordering; record timestamps are used where available.
+
+The frontend presents a calm operational timeline with two filters and clear source badges. It is a navigation and orientation surface, not a new workflow: users continue to edit evidence, findings, reviews, and signals in their existing workspaces. The page explains that events are derived from recorded governance work and does not infer legal conclusions, certification, objective safety, or automated decisions.
+
+Implementation files are `backend/activity/` for the response schema, derived query logic, and route; `backend/test_activity.py` for ordering, filtering, invalid-filter, and cross-user coverage; `frontend/src/pages/ActivityPage.tsx` for the timeline; and the shared frontend API/types, protected route, dashboard entry point, route manifest, and API contract test. No migration is required for this read model.
