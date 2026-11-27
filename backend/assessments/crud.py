@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from backend.assessments.questionnaire import (
@@ -87,6 +88,28 @@ def submit_category_answers(
     if not assessment:
         return None
 
+    questionnaire = QUESTIONNAIRES[category]
+    expected_questions = {question["id"]: question for question in questionnaire["questions"]}
+    submitted_questions = set(answers)
+    missing = sorted(set(expected_questions) - submitted_questions)
+    unknown = sorted(submitted_questions - set(expected_questions))
+    invalid_options = {
+        question_id: value
+        for question_id, value in answers.items()
+        if question_id in expected_questions
+        and value not in {option["value"] for option in expected_questions[question_id]["options"]}
+    }
+    if missing or unknown or invalid_options:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "message": "Answers must include exactly one valid option for every question.",
+                "missing_questions": missing,
+                "unknown_questions": unknown,
+                "invalid_options": invalid_options,
+            },
+        )
+
     # Calculate score and maturity
     score = calculate_category_score(answers, category)
     maturity = get_maturity_level(score)
@@ -105,6 +128,9 @@ def submit_category_answers(
     if existing_result:
         # Update existing result
         existing_result.questions = answers
+        existing_result.questionnaire_version = "1.0"
+        existing_result.questionnaire_snapshot = questionnaire
+        existing_result.scoring_version = "1.0"
         existing_result.score = score
         existing_result.maturity_level = maturity.value
         existing_result.recommendations = recommendations
@@ -116,6 +142,9 @@ def submit_category_answers(
             assessment_id=assessment_id,
             category=category.value,
             questions=answers,
+            questionnaire_version="1.0",
+            questionnaire_snapshot=questionnaire,
+            scoring_version="1.0",
             score=score,
             maturity_level=maturity.value,
             recommendations=recommendations,
@@ -126,23 +155,26 @@ def submit_category_answers(
     if assessment.status == "draft":
         assessment.status = "in_progress"
 
-    # Make the new result visible before checking completion because test and local
-    # sessions intentionally use autoflush=False.
+    # Flush the new or updated result before checking completion. The test and
+    # production sessions may disable autoflush, so a count query can otherwise
+    # miss the category submitted in this request.
     db.flush()
 
-    # Complete only when every category in the active questionnaire schema has a result.
-    completed_categories = {
-        category
-        for (category,) in db.query(AssessmentResult.category)
+    # Check against the authoritative questionnaire categories rather than a
+    # hard-coded count. Distinct categories also prevent duplicate submissions
+    # from making an assessment appear complete.
+    completed_categories = (
+        db.query(AssessmentResult)
         .filter(AssessmentResult.assessment_id == assessment_id)
+        .with_entities(AssessmentResult.category)
         .distinct()
         .all()
-    }
-    required_categories = {category.value for category in QUESTIONNAIRES}
+    )
 
-    if required_categories.issubset(completed_categories):
+    if len(completed_categories) == len(QUESTIONNAIRES):
         assessment.status = "completed"
-        assessment.completed_at = datetime.utcnow()
+        if assessment.completed_at is None:
+            assessment.completed_at = datetime.utcnow()
 
     db.commit()
     db.refresh(result)

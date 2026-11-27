@@ -1,116 +1,93 @@
-// API base URL
+import { ApiError, classifyHttpStatus, classifyRequestFailure } from './apiErrors';
+import type { Assessment, AssessmentResult, AssessmentSummary, Questionnaire } from '../types';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
-// Auth endpoints
+type ResponseType = 'json' | 'blob';
+
+type RequestOptions = RequestInit & {
+    token?: string;
+    responseType?: ResponseType;
+    timeoutMs?: number;
+};
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+    const { token, responseType = 'json', timeoutMs = 15000, signal, headers, ...init } = options;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+    const abortListener = () => controller.abort();
+    signal?.addEventListener('abort', abortListener, { once: true });
+
+    const requestHeaders = new Headers(headers);
+    if (token) requestHeaders.set('Authorization', `Bearer ${token}`);
+    if (init.body && !requestHeaders.has('Content-Type')) requestHeaders.set('Content-Type', 'application/json');
+
+    try {
+        const response = await fetch(`${API_BASE_URL}${path}`, {
+            ...init,
+            headers: requestHeaders,
+            signal: controller.signal,
+        });
+
+        if (!response.ok) {
+            let detail: string | undefined;
+            try {
+                const payload = await response.json() as { detail?: unknown; message?: unknown };
+                if (typeof payload.detail === 'string') detail = payload.detail;
+                else if (typeof payload.message === 'string') detail = payload.message;
+            } catch {
+                // Some gateways return an HTML or empty error body.
+            }
+            throw classifyHttpStatus(response.status, detail);
+        }
+
+        if (responseType === 'blob') return await response.blob() as T;
+        if (response.status === 204) return undefined as T;
+        return await response.json() as T;
+    } catch (error) {
+        if (error instanceof ApiError) throw error;
+        if (controller.signal.aborted && !signal?.aborted) {
+            throw new ApiError('The request timed out. Please try again.', {
+                kind: 'network',
+                retryable: true,
+            });
+        }
+        throw classifyRequestFailure(error);
+    } finally {
+        window.clearTimeout(timeout);
+        signal?.removeEventListener('abort', abortListener);
+    }
+}
+
 export const authAPI = {
-    signup: async (email: string, password: string, fullName?: string) => {
-        const response = await fetch(`${API_BASE_URL}/auth/signup`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, full_name: fullName }),
-        });
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Signup failed');
-        }
-        return response.json();
-    },
-
-    login: async (email: string, password: string) => {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Login failed');
-        }
-        return response.json();
-    },
-
-    requestPasswordReset: async (email: string) => {
-        const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email }),
-        });
-        if (!response.ok) throw new Error('Password reset request failed');
-        return response.json();
-    },
+    signup: (email: string, password: string, fullName?: string) => request<{ access_token: string }>('/auth/signup', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, full_name: fullName }),
+    }),
+    login: (email: string, password: string) => request<{ access_token: string }>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+    }),
+    requestPasswordReset: (email: string) => request('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+    }),
 };
 
-// Assessment endpoints
 export const assessmentAPI = {
-    getQuestionnaires: async () => {
-        const response = await fetch(`${API_BASE_URL}/assessments/questionnaires`);
-        if (!response.ok) throw new Error('Failed to fetch questionnaires');
-        return response.json();
-    },
-
-    createAssessment: async (token: string, title: string, description?: string) => {
-        const response = await fetch(`${API_BASE_URL}/assessments`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ title, description }),
-        });
-        if (!response.ok) throw new Error('Failed to create assessment');
-        return response.json();
-    },
-
-    listAssessments: async (token: string) => {
-        const response = await fetch(`${API_BASE_URL}/assessments`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error('Failed to fetch assessments');
-        return response.json();
-    },
-
-    getAssessment: async (token: string, id: number) => {
-        const response = await fetch(`${API_BASE_URL}/assessments/${id}`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error('Failed to fetch assessment');
-        return response.json();
-    },
-
-    submitAnswers: async (token: string, assessmentId: number, category: string, answers: Record<string, number>) => {
-        const response = await fetch(`${API_BASE_URL}/assessments/${assessmentId}/answers`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ category, answers }),
-        });
-        if (!response.ok) throw new Error('Failed to submit answers');
-        return response.json();
-    },
-
-    getSummary: async (token: string, assessmentId: number) => {
-        const response = await fetch(`${API_BASE_URL}/assessments/${assessmentId}/summary`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error('Failed to fetch summary');
-        return response.json();
-    },
-
-    exportCSV: async (token: string, assessmentId: number) => {
-        const response = await fetch(`${API_BASE_URL}/assessments/${assessmentId}/export/csv`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error('Failed to export CSV');
-        return response.blob();
-    },
-
-    exportPDF: async (token: string, assessmentId: number) => {
-        const response = await fetch(`${API_BASE_URL}/assessments/${assessmentId}/export/pdf`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error('Failed to export PDF');
-        return response.blob();
-    },
+    getQuestionnaires: () => request<Questionnaire[]>('/assessments/questionnaires'),
+    createAssessment: (token: string, title: string, description?: string) => request<Assessment>('/assessments', {
+        method: 'POST', token, body: JSON.stringify({ title, description }),
+    }),
+    listAssessments: (token: string) => request<Assessment[]>('/assessments', { token }),
+    getAssessment: (token: string, id: number) => request<Assessment>(`/assessments/${id}`, { token }),
+    submitAnswers: (token: string, assessmentId: number, category: string, answers: Record<string, number>) => request<AssessmentResult>(`/assessments/${assessmentId}/answers`, {
+        method: 'POST', token, body: JSON.stringify({ category, answers }),
+        // Answer submissions are deliberately never retried automatically.
+    }),
+    getSummary: (token: string, assessmentId: number) => request<AssessmentSummary>(`/assessments/${assessmentId}/summary`, { token }),
+    exportCSV: (token: string, assessmentId: number) => request<Blob>(`/assessments/${assessmentId}/export/csv`, { token, responseType: 'blob' }),
+    exportPDF: (token: string, assessmentId: number) => request<Blob>(`/assessments/${assessmentId}/export/pdf`, { token, responseType: 'blob' }),
 };
+
+export { request as apiRequest };

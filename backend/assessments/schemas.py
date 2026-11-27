@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -17,14 +18,14 @@ class AssessmentUpdate(BaseModel):
 
     title: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = None
-    status: str | None = None
+    status: Literal["draft", "in_progress", "completed"] | None = None
 
 
 class CategoryAnswers(BaseModel):
     """Answers for a specific category"""
 
     category: AssessmentCategory
-    answers: dict[str, int]  # question_id -> answer_value
+    answers: dict[str, int] = Field(default_factory=dict)  # question_id -> answer_value
 
 
 class AssessmentResultResponse(BaseModel):

@@ -3,12 +3,15 @@ from datetime import datetime
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
     Column,
     DateTime,
     ForeignKey,
     Integer,
     String,
     Text,
+    Index,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 
@@ -75,8 +78,8 @@ class Assessment(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    schema_version = Column(String(10), default="1.0")
-    status = Column(String(50), default="draft")  # draft, in_progress, completed
+    schema_version = Column(String(32), default="1.0", nullable=False)
+    status = Column(String(20), default="draft", nullable=False)  # draft, in_progress, completed
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
@@ -85,6 +88,18 @@ class Assessment(Base):
     user = relationship("User", back_populates="assessments")
     results = relationship(
         "AssessmentResult", back_populates="assessment", cascade="all, delete-orphan"
+    )
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('draft', 'in_progress', 'completed')",
+            name="ck_assessments_status",
+        ),
+        CheckConstraint(
+            "status <> 'completed' OR completed_at IS NOT NULL",
+            name="ck_assessments_completed_at",
+        ),
+        Index("ix_assessments_user_created_at", "user_id", "created_at"),
+        Index("ix_assessments_user_status", "user_id", "status"),
     )
 
 
@@ -99,6 +114,9 @@ class AssessmentResult(Base):
         String(100), nullable=False
     )  # data_privacy, model_risk, ethics, compliance
     questions = Column(JSON, nullable=False)  # Store questions and answers
+    questionnaire_version = Column(String(32), nullable=False, default="1.0")
+    questionnaire_snapshot = Column(JSON, nullable=False, default=dict)
+    scoring_version = Column(String(32), nullable=False, default="1.0")
     score = Column(Integer, nullable=False)  # 0-100
     maturity_level = Column(
         String(50), nullable=False
@@ -108,3 +126,15 @@ class AssessmentResult(Base):
 
     # Relationships
     assessment = relationship("Assessment", back_populates="results")
+    __table_args__ = (
+        UniqueConstraint(
+            "assessment_id",
+            "category",
+            name="uq_assessment_results_assessment_category",
+        ),
+        Index("ix_assessment_results_assessment_category", "assessment_id", "category"),
+        CheckConstraint(
+            "category IN ('data_privacy', 'model_risk', 'ethics', 'compliance')",
+            name="ck_assessment_results_category",
+        ),
+    )

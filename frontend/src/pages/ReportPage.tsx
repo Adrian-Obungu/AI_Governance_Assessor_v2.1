@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { assessmentAPI } from '../services/api';
+import { ApiError } from '../services/apiErrors';
 import type { AssessmentSummary } from '../types';
 
 const ReportPage: React.FC = () => {
@@ -9,28 +10,35 @@ const ReportPage: React.FC = () => {
     const [summary, setSummary] = useState<AssessmentSummary | null>(null);
     const [loading, setLoading] = useState(true);
     const [exporting, setExporting] = useState(false);
-    const { token } = useAuth();
+    const [error, setError] = useState('');
+    const { token, expireSession } = useAuth();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        loadSummary();
-    }, [id]);
-
-    const loadSummary = async () => {
+    const loadSummary = useCallback(async () => {
         if (!token || !id) return;
         try {
             const data = await assessmentAPI.getSummary(token, parseInt(id));
             setSummary(data);
         } catch (error) {
             console.error('Failed to load summary:', error);
+            if (error instanceof ApiError && error.kind === 'unauthorized') {
+                expireSession();
+                return;
+            }
+            setError(error instanceof ApiError ? error.message : 'We could not load this report. Please refresh and try again.');
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, token, expireSession]);
+
+    useEffect(() => {
+        loadSummary();
+    }, [loadSummary]);
 
     const handleExport = async (format: 'csv' | 'pdf') => {
         if (!token || !id) return;
         setExporting(true);
+        setError('');
         try {
             const blob = format === 'csv'
                 ? await assessmentAPI.exportCSV(token, parseInt(id))
@@ -42,10 +50,15 @@ const ReportPage: React.FC = () => {
             a.download = `assessment_${id}.${format}`;
             document.body.appendChild(a);
             a.click();
-            window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
+            window.setTimeout(() => window.URL.revokeObjectURL(url), 0);
         } catch (error) {
             console.error(`Failed to export ${format}:`, error);
+            if (error instanceof ApiError && error.kind === 'unauthorized') {
+                expireSession();
+                return;
+            }
+            setError(`We could not export the ${format.toUpperCase()} report. Please try again.`);
         } finally {
             setExporting(false);
         }
@@ -111,6 +124,11 @@ const ReportPage: React.FC = () => {
                         </button>
                     </div>
                 </div>
+                {error && (
+                    <div role="alert" className="mb-6 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+                        {error}
+                    </div>
+                )}
 
                 {/* Overall Score */}
                 <div className="card mb-6 text-center">

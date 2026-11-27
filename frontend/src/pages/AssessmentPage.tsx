@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { assessmentAPI } from '../services/api';
+import { ApiError } from '../services/apiErrors';
 import type { Assessment, AssessmentResult, Questionnaire, Question } from '../types';
 
 const AssessmentPage: React.FC = () => {
@@ -14,14 +15,10 @@ const AssessmentPage: React.FC = () => {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
-    const { token } = useAuth();
+    const { token, expireSession } = useAuth();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        loadData();
-    }, [id]);
-
-    const loadData = async (): Promise<Assessment | null> => {
+    const loadData = useCallback(async (): Promise<Assessment | null> => {
         if (!token || !id) return null;
         try {
             const [assessmentData, questionnairesData] = await Promise.all([
@@ -44,12 +41,20 @@ const AssessmentPage: React.FC = () => {
             return assessmentData;
         } catch (error) {
             console.error('Failed to load data:', error);
-            setError('We could not load this assessment. Please refresh and try again.');
+            if (error instanceof ApiError && error.kind === 'unauthorized') {
+                expireSession();
+                return null;
+            }
+            setError(error instanceof ApiError ? error.message : 'We could not load this assessment. Please refresh and try again.');
             return null;
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, token, expireSession]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
 
     const handleAnswerChange = (questionId: string, value: number) => {
         setAnswers({ ...answers, [questionId]: value });
@@ -71,7 +76,13 @@ const AssessmentPage: React.FC = () => {
             }
         } catch (error) {
             console.error('Failed to submit answers:', error);
-            setError('We could not save this section. Check your answers and try again.');
+            if (error instanceof ApiError && error.kind === 'unauthorized') {
+                expireSession();
+                return;
+            }
+            setError(error instanceof ApiError && error.kind === 'network'
+                ? `${error.message} Your answers are still here.`
+                : 'We could not save this section. Your answers are still here. Check your answers and try again.');
         } finally {
             setSubmitting(false);
         }

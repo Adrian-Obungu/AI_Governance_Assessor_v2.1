@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { assessmentAPI } from '../services/api';
+import { ApiError } from '../services/apiErrors';
 import type { Assessment } from '../types';
 
 const assessmentTemplates = [
@@ -35,24 +36,43 @@ const DashboardPage: React.FC = () => {
     const [newDescription, setNewDescription] = useState(assessmentTemplates[0].description);
     const [selectedTemplate, setSelectedTemplate] = useState('AI governance baseline');
     const [error, setError] = useState('');
-    const { token, email, logout } = useAuth();
+    const createButtonRef = useRef<HTMLButtonElement>(null);
+    const closeModalRef = useRef<HTMLButtonElement>(null);
+    const modalWasOpen = useRef(false);
+    const { token, email, logout, expireSession } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
-        loadAssessments();
-    }, []);
+        if (showCreateModal) {
+            modalWasOpen.current = true;
+            closeModalRef.current?.focus();
+        } else if (modalWasOpen.current) {
+            createButtonRef.current?.focus();
+        }
+    }, [showCreateModal]);
 
-    const loadAssessments = async () => {
+    const loadAssessments = useCallback(async () => {
         if (!token) return;
         try {
+            setLoading(true);
+            setError('');
             const data = await assessmentAPI.listAssessments(token);
             setAssessments(data);
         } catch (error) {
             console.error('Failed to load assessments:', error);
+            if (error instanceof ApiError && error.kind === 'unauthorized') {
+                expireSession();
+                return;
+            }
+            setError(error instanceof ApiError ? error.message : 'We could not load assessments. Please try again.');
         } finally {
             setLoading(false);
         }
-    };
+    }, [token, expireSession]);
+
+    useEffect(() => {
+        loadAssessments();
+    }, [loadAssessments]);
 
     const handleCreateAssessment = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -125,7 +145,7 @@ const DashboardPage: React.FC = () => {
                         <h2 className="text-3xl font-bold text-gray-800">My Assessments</h2>
                         <p className="mt-1 text-gray-600">Track governance reviews and return to unfinished work.</p>
                     </div>
-                    <button onClick={() => { setError(''); setShowCreateModal(true); }} className="btn-primary">
+                    <button ref={createButtonRef} onClick={() => { setError(''); setShowCreateModal(true); }} className="btn-primary">
                         + New Assessment
                     </button>
                 </div>
@@ -133,6 +153,11 @@ const DashboardPage: React.FC = () => {
                 {loading ? (
                     <div className="text-center py-12">
                         <div className="text-gray-600">Loading assessments...</div>
+                    </div>
+                ) : error ? (
+                    <div className="card text-center py-12" role="alert">
+                        <p className="text-red-700">{error}</p>
+                        <button onClick={loadAssessments} className="btn-secondary mt-4">Retry</button>
                     </div>
                 ) : assessments.length === 0 ? (
                     <div className="card text-center py-12">
@@ -147,10 +172,12 @@ const DashboardPage: React.FC = () => {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {assessments.map((assessment) => (
-                            <div
+                            <button
+                                type="button"
                                 key={assessment.id}
-                                className="card hover:shadow-lg transition-shadow cursor-pointer"
+                                className="card w-full text-left hover:shadow-lg transition-shadow focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                                 onClick={() => navigate(`/assessment/${assessment.id}`)}
+                                aria-label={`Open assessment ${assessment.title}`}
                             >
                                 <div className="flex justify-between items-start mb-2">
                                     <h3 className="text-xl font-semibold text-gray-800">{assessment.title}</h3>
@@ -169,7 +196,7 @@ const DashboardPage: React.FC = () => {
                                         {assessment.results.length} / 4 categories completed
                                     </div>
                                 )}
-                            </div>
+                            </button>
                         ))}
                     </div>
                 )}
@@ -178,7 +205,18 @@ const DashboardPage: React.FC = () => {
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="card max-w-lg w-full" role="dialog" aria-modal="true" aria-labelledby="create-assessment-title">
-                        <h3 id="create-assessment-title" className="text-2xl font-bold text-gray-800 mb-2">Start a governance assessment</h3>
+                        <div className="flex items-start justify-between gap-4">
+                            <h3 id="create-assessment-title" className="text-2xl font-bold text-gray-800 mb-2">Start a governance assessment</h3>
+                            <button
+                                ref={closeModalRef}
+                                type="button"
+                                onClick={() => setShowCreateModal(false)}
+                                className="text-gray-500 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded"
+                                aria-label="Close assessment dialog"
+                            >
+                                ×
+                            </button>
+                        </div>
                         <p className="text-sm text-gray-600 mb-4">The suggested names help frame your review. They do not change the current four-domain questionnaire.</p>
                         <form onSubmit={handleCreateAssessment} className="space-y-4">
                             <div>
