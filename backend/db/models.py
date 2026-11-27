@@ -109,6 +109,7 @@ class Assessment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    ai_system_id = Column(Integer, ForeignKey("ai_systems.id"), nullable=True, index=True)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     schema_version = Column(String(32), default="1.0", nullable=False)
@@ -119,6 +120,7 @@ class Assessment(Base):
 
     # Relationships
     user = relationship("User", back_populates="assessments")
+    ai_system = relationship("AISystem")
     results = relationship(
         "AssessmentResult", back_populates="assessment", cascade="all, delete-orphan"
     )

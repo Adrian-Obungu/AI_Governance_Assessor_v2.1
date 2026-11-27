@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { inventoryAPI } from '../services/api';
+import { assessmentAPI, inventoryAPI } from '../services/api';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -37,6 +37,20 @@ describe('inventory API contract', () => {
             name: 'Support assistant',
             lifecycle_stage: 'pilot',
             geographies: ['Kenya'],
+        });
+    });
+
+    it('sends an optional inventory context when creating an assessment', async () => {
+        const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+            new Response(JSON.stringify({ id: 3 }), { status: 201, headers: { 'Content-Type': 'application/json' } }),
+        );
+
+        await assessmentAPI.createAssessment('test-token', 'Context review', 'Review description', 12);
+
+        const [, options] = fetchMock.mock.calls[0];
+        expect(JSON.parse(String(options?.body))).toMatchObject({
+            title: 'Context review',
+            ai_system_id: 12,
         });
     });
 });

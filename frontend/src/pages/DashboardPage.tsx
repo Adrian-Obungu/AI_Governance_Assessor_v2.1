@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { assessmentAPI } from '../services/api';
+import { assessmentAPI, inventoryAPI } from '../services/api';
 import { ApiError } from '../services/apiErrors';
-import type { Assessment } from '../types';
+import type { AISystem, Assessment } from '../types';
 
 const assessmentTemplates = [
     {
@@ -30,11 +30,13 @@ const assessmentTemplates = [
 
 const DashboardPage: React.FC = () => {
     const [assessments, setAssessments] = useState<Assessment[]>([]);
+    const [systems, setSystems] = useState<AISystem[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newTitle, setNewTitle] = useState(assessmentTemplates[0].title);
     const [newDescription, setNewDescription] = useState(assessmentTemplates[0].description);
     const [selectedTemplate, setSelectedTemplate] = useState('AI governance baseline');
+    const [selectedSystemId, setSelectedSystemId] = useState('');
     const [error, setError] = useState('');
     const createButtonRef = useRef<HTMLButtonElement>(null);
     const closeModalRef = useRef<HTMLButtonElement>(null);
@@ -74,17 +76,35 @@ const DashboardPage: React.FC = () => {
         loadAssessments();
     }, [loadAssessments]);
 
+    const loadInventory = useCallback(async () => {
+        if (!token) return;
+        try {
+            setSystems(await inventoryAPI.list(token));
+        } catch (error) {
+            if (error instanceof ApiError && error.kind === 'unauthorized') {
+                expireSession();
+                return;
+            }
+            setError('We could not load your AI-system context. You can continue without linking one.');
+        }
+    }, [token, expireSession]);
+
+    useEffect(() => {
+        loadInventory();
+    }, [loadInventory]);
+
     const handleCreateAssessment = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!token) return;
 
         try {
             setError('');
-            await assessmentAPI.createAssessment(token, newTitle, newDescription);
+            await assessmentAPI.createAssessment(token, newTitle, newDescription, selectedSystemId ? Number(selectedSystemId) : undefined);
             setShowCreateModal(false);
             setNewTitle(assessmentTemplates[0].title);
             setNewDescription(assessmentTemplates[0].description);
             setSelectedTemplate('AI governance baseline');
+            setSelectedSystemId('');
             loadAssessments();
         } catch (error) {
             console.error('Failed to create assessment:', error);
@@ -239,6 +259,23 @@ const DashboardPage: React.FC = () => {
                                 >
                                     {assessmentTemplates.map((template) => <option key={template.name} value={template.name}>{template.name}</option>)}
                                 </select>
+                            </div>
+                            <div>
+                                <label htmlFor="assessment-system" className="block text-sm font-medium text-gray-700 mb-1">
+                                    AI system context (optional)
+                                </label>
+                                <select
+                                    id="assessment-system"
+                                    value={selectedSystemId}
+                                    onChange={(e) => setSelectedSystemId(e.target.value)}
+                                    className="input-field"
+                                >
+                                    <option value="">Continue without linking a system</option>
+                                    {systems.map((system) => (
+                                        <option key={system.id} value={system.id}>{system.name}</option>
+                                    ))}
+                                </select>
+                                <p className="mt-1 text-xs text-gray-500">Linking adds context; it does not change the questions or score.</p>
                             </div>
                             <div>
                                 <label htmlFor="assessment-title" className="block text-sm font-medium text-gray-700 mb-1">

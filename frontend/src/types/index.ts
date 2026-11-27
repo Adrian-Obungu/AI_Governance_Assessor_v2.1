@@ -28,6 +28,8 @@ export interface AISystem {
 export interface Assessment {
     id: number;
     user_id: number;
+    ai_system_id?: number;
+    ai_system?: Pick<AISystem, 'id' | 'name' | 'purpose'>;
     title: string;
     description?: string;
     schema_version: string;
