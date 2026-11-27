@@ -5,6 +5,7 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     Column,
+    Date,
     DateTime,
     ForeignKey,
     Integer,
@@ -37,6 +38,38 @@ class User(Base):
     assessments = relationship("Assessment", back_populates="user")
     failed_logins = relationship("FailedLogin", back_populates="user")
     password_resets = relationship("PasswordReset", back_populates="user")
+    ai_systems = relationship("AISystem", back_populates="user", cascade="all, delete-orphan")
+
+
+class AISystem(Base):
+    """A user-owned AI system or AI-enabled process in the governance inventory."""
+
+    __tablename__ = "ai_systems"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String(255), nullable=False)
+    purpose = Column(Text, nullable=False)
+    department = Column(String(120), nullable=True)
+    business_owner = Column(String(255), nullable=True)
+    provider = Column(String(255), nullable=True)
+    lifecycle_stage = Column(String(32), nullable=False, default="discovery")
+    geographies = Column(JSON, nullable=False, default=list)
+    data_categories = Column(JSON, nullable=False, default=list)
+    affected_groups = Column(JSON, nullable=False, default=list)
+    review_date = Column(Date, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = relationship("User", back_populates="ai_systems")
+    __table_args__ = (
+        CheckConstraint(
+            "lifecycle_stage IN ('discovery', 'pilot', 'in_production', 'retired')",
+            name="ck_ai_systems_lifecycle_stage",
+        ),
+        Index("ix_ai_systems_user_created_at", "user_id", "created_at"),
+        Index("ix_ai_systems_user_review_date", "user_id", "review_date"),
+    )
 
 
 class FailedLogin(Base):

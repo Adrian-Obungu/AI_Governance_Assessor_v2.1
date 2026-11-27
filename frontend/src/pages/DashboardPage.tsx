@@ -140,6 +140,14 @@ const DashboardPage: React.FC = () => {
                         ))}
                     </div>
                 </section>
+                <section className="card mb-8 flex flex-col gap-4 border-l-4 border-primary-500 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p className="text-sm font-semibold uppercase tracking-wide text-primary-600">Start with context</p>
+                        <h2 className="mt-1 text-xl font-bold text-gray-800">Record the AI system before scoring it.</h2>
+                        <p className="mt-1 max-w-2xl text-gray-600">Capture its purpose, owner, provider, and operating context so the assessment has something real to refer to.</p>
+                    </div>
+                    <button type="button" onClick={() => navigate('/inventory')} className="btn-secondary whitespace-nowrap">Open AI-system inventory</button>
+                </section>
                 <div className="flex justify-between items-center mb-6">
                     <div>
                         <h2 className="text-3xl font-bold text-gray-800">My Assessments</h2>

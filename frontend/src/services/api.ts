@@ -1,5 +1,5 @@
 import { ApiError, classifyHttpStatus, classifyRequestFailure } from './apiErrors';
-import type { Assessment, AssessmentResult, AssessmentSummary, Questionnaire } from '../types';
+import type { AISystem, Assessment, AssessmentResult, AssessmentSummary, Questionnaire } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -88,6 +88,17 @@ export const assessmentAPI = {
     getSummary: (token: string, assessmentId: number) => request<AssessmentSummary>(`/assessments/${assessmentId}/summary`, { token }),
     exportCSV: (token: string, assessmentId: number) => request<Blob>(`/assessments/${assessmentId}/export/csv`, { token, responseType: 'blob' }),
     exportPDF: (token: string, assessmentId: number) => request<Blob>(`/assessments/${assessmentId}/export/pdf`, { token, responseType: 'blob' }),
+};
+
+export const inventoryAPI = {
+    list: (token: string) => request<AISystem[]>('/inventory', { token }),
+    get: (token: string, id: number) => request<AISystem>(`/inventory/${id}`, { token }),
+    create: (token: string, payload: Omit<AISystem, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => request<AISystem>('/inventory', {
+        method: 'POST', token, body: JSON.stringify(payload),
+    }),
+    update: (token: string, id: number, payload: Partial<Omit<AISystem, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => request<AISystem>(`/inventory/${id}`, {
+        method: 'PUT', token, body: JSON.stringify(payload),
+    }),
 };
 
 export { request as apiRequest };

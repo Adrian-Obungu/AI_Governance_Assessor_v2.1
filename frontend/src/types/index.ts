@@ -6,6 +6,25 @@ export interface User {
     created_at: string;
 }
 
+export type AISystemLifecycle = 'discovery' | 'pilot' | 'in_production' | 'retired';
+
+export interface AISystem {
+    id: number;
+    user_id: number;
+    name: string;
+    purpose: string;
+    department?: string;
+    business_owner?: string;
+    provider?: string;
+    lifecycle_stage: AISystemLifecycle;
+    geographies: string[];
+    data_categories: string[];
+    affected_groups: string[];
+    review_date?: string;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface Assessment {
     id: number;
     user_id: number;

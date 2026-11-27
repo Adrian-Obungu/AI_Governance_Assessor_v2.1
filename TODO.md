@@ -9,7 +9,7 @@
 ## Core user journey
 
 - [x] A repeatable PowerShell API journey covers synthetic signup/login, assessment creation, all questionnaire categories, summary, CSV/PDF exports, and unauthenticated rejection.
-- [ ] A synthetic browser journey registers a user, creates an assessment, completes all questionnaire categories, reviews the report, exports CSV/PDF, and signs out.
+- [x] A synthetic browser journey registers a user, creates an assessment, completes all questionnaire categories, reviews the report, exports CSV/PDF, and signs out.
 - [ ] The frontend test suite covers login form behavior, API loading/error states, assessment progress, report rendering, and recovery from an expired token.
 - [ ] The project has a repeatable clean-checkout smoke procedure that validates frontend HTTP delivery, API proxying, authentication, assessment creation, answer submission, summary rendering, and exports.
 
@@ -19,6 +19,15 @@
 - [ ] Assessment versions preserve the questionnaire and scoring interpretation used when an assessment was completed.
 - [ ] Findings link a conclusion to evidence, priority, owner, due date, status, and reviewer notes.
 - [ ] Reports distinguish calculated score, evidence completeness, assessor confidence, and unresolved questions.
+
+## Phase 5A: AI-system inventory and contextual intake
+
+- [x] An authenticated user can create an AI-system record with a name, purpose, department, business owner, provider/vendor, lifecycle stage, geographies, data categories, affected groups, and review date.
+- [x] The inventory API validates field lengths and lifecycle values, scopes list/read/update operations to the authenticated owner, and returns `404` for another user’s record.
+- [x] The inventory database migration is compatible with SQLite development and PostgreSQL deployment and includes ownership and review indexes; live SQLite migration validation reached revision `0003`.
+- [x] The frontend offers a mobile-friendly inventory page with a short guided form, plain-language explanations, a clear next action, preserved form state after validation errors, and visible lifecycle/review information.
+- [x] The dashboard links users to the inventory before they begin a questionnaire, so the product starts with a system context rather than a score alone.
+- [x] The implementation includes backend regression tests and frontend/API contract coverage: backend `23 passed`, frontend `15 passed`, lint passed, and production build passed.
 
 ## Engineering stewardship
 
