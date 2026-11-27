@@ -118,3 +118,15 @@ The frontend review workspace keeps the next action clear: select the system, re
 Implementation files are `backend/reviews/` for schemas, ownership-scoped CRUD, and routes; `backend/alembic/versions/0007_review_reassessment.py` for the portable migration; `backend/test_reviews.py` for authorization and context-link coverage; `frontend/src/pages/ReviewsPage.tsx` for the guided workspace; and the shared frontend API/types, protected route, dashboard entry point, route manifest, and API contract test.
 
 Phase 5E validation completed with the full backend suite (`36 passed`), frontend tests (`22 passed`), Black, Ruff, ESLint, TypeScript/Vite production build, `git diff --check`, and a disposable SQLite migration through revision `0007`.
+
+## Phase 5F: Operational signals and incident/feedback intake
+
+This slice adds one operational signal record rather than separate incident-management and feedback products. A signal belongs to the authenticated user and an AI-system inventory record, and may optionally link to a finding or human review from that same system context. Supported types are `incident`, `feedback`, and `material_change`; supported severities are `low`, `medium`, `high`, and `critical`; supported workflow statuses are `new`, `triaged`, `investigating`, and `closed`.
+
+Each record captures a title, plain-language description, reported-by source, discovered date, owner, response or next action, and reviewer notes. The API validates Pydantic values and database checks, scopes all reads and writes to the authenticated owner, supports filters by system/type/severity/status, and returns `404` for inaccessible or context-mismatched links. This keeps the record useful for small teams without claiming that the platform has determined a legal incident category or objective safety outcome.
+
+The frontend adds a mobile-friendly operational signals workspace with a short intake form, simple filters, visible severity and status, and a human-controlled “Mark closed” action. The dashboard presents signals as the next operational step after review: teams can record what happened, assign an owner, and carry the item into future human review. No automated classification, automated triage, file upload, sensitive-data hosting, certification, legal conclusion, or autonomous high-impact decision is introduced.
+
+Implementation files are `backend/signals/` for schemas, ownership-scoped CRUD, and routes; `backend/alembic/versions/0008_operational_signals.py` for the portable migration; `backend/test_signals.py` for validation, filtering, context-link, and isolation coverage; `frontend/src/pages/SignalsPage.tsx` for the guided workspace; and the shared frontend API/types, protected route, dashboard entry point, and route manifest.
+
+Validation must include the full backend suite, focused signal tests, Black, Ruff, frontend Vitest, ESLint, TypeScript/Vite production build, `git diff --check`, and disposable SQLite migration through revision `0008`. Any staging write-mode migration or backfill remains a manual operator action and is not part of CI.

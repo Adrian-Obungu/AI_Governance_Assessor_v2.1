@@ -30,6 +30,15 @@
 - [x] The implementation includes backend regression tests and frontend/API contract coverage: backend `23 passed`, frontend `15 passed`, lint passed, and production build passed.
 
 ## Engineering stewardship
+## Phase 5F: Operational signals and incident/feedback intake
+
+- [x] An authenticated user can record an incident, user feedback item, or material change against an owned AI system with a summary, severity, source, discovered date, owner, status, response/action, and reviewer notes.
+- [x] A signal may optionally link to an owned finding or review, and the API rejects inaccessible or context-mismatched links with `404`.
+- [x] Signal type, severity, and workflow status are validated; list filters support AI system, type, severity, and status; records are ownership-scoped.
+- [x] The migration is SQLite-development and PostgreSQL-deployment compatible and preserves existing records; disposable SQLite upgrade reaches revision `0008`.
+- [x] The frontend provides a mobile-friendly signals workspace with one clear intake form, filters, visible severity/status, and a human-controlled close action.
+- [x] Signals are operational governance records only: the feature does not claim legal incident classification, certification, objective safety, automated triage, or autonomous high-impact decisions.
+- [x] Backend regression tests and frontend/API contract coverage pass, together with Black, Ruff, ESLint, TypeScript/Vite production build, `git diff --check`, and migration validation.
 
 ## Phase 5B: Assessment context linkage
 

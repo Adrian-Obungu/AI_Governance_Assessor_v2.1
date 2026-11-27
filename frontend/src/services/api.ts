@@ -1,5 +1,5 @@
 import { ApiError, classifyHttpStatus, classifyRequestFailure } from './apiErrors';
-import type { AISystem, Assessment, AssessmentResult, AssessmentSummary, EvidenceRecord, EvidenceStatus, FindingPriority, FindingRecord, FindingStatus, Questionnaire, ReviewDecision, ReviewRecord } from '../types';
+import type { AISystem, Assessment, AssessmentResult, AssessmentSummary, EvidenceRecord, EvidenceStatus, FindingPriority, FindingRecord, FindingStatus, OperationalSignal, Questionnaire, ReviewDecision, ReviewRecord, SignalSeverity, SignalStatus, SignalType } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -147,6 +147,24 @@ export const reviewsAPI = {
         method: 'POST', token, body: JSON.stringify({ ...payload, assessment_id: payload.assessment_id ?? null, reassessment_id: payload.reassessment_id ?? null, next_review_date: payload.next_review_date ?? null }),
     }),
     update: (token: string, id: number, payload: Partial<Omit<ReviewRecord, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => request<ReviewRecord>(`/reviews/${id}`, {
+        method: 'PUT', token, body: JSON.stringify(payload),
+    }),
+};
+
+export const signalsAPI = {
+    list: (token: string, filters: { aiSystemId?: number; signalType?: SignalType; severity?: SignalSeverity; status?: SignalStatus } = {}) => {
+        const params = new URLSearchParams();
+        if (filters.aiSystemId) params.set('ai_system_id', String(filters.aiSystemId));
+        if (filters.signalType) params.set('signal_type', filters.signalType);
+        if (filters.severity) params.set('severity', filters.severity);
+        if (filters.status) params.set('status', filters.status);
+        const query = params.toString();
+        return request<OperationalSignal[]>(`/signals${query ? `?${query}` : ''}`, { token });
+    },
+    create: (token: string, payload: Omit<OperationalSignal, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => request<OperationalSignal>('/signals', {
+        method: 'POST', token, body: JSON.stringify({ ...payload, finding_id: payload.finding_id ?? null, review_id: payload.review_id ?? null, owner: payload.owner ?? null, response_action: payload.response_action ?? null, reviewer_notes: payload.reviewer_notes ?? null }),
+    }),
+    update: (token: string, id: number, payload: Partial<Omit<OperationalSignal, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => request<OperationalSignal>(`/signals/${id}`, {
         method: 'PUT', token, body: JSON.stringify(payload),
     }),
 };
