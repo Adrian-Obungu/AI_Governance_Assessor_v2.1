@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = process.env.BASE_URL || 'http://localhost/';
 const evidenceMode = process.env.E2E_EVIDENCE === '1';
+const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH || (process.platform === 'linux' ? '/usr/bin/chromium' : undefined);
 
 export default defineConfig({
   testDir: './e2e',
@@ -23,8 +24,8 @@ export default defineConfig({
     screenshot: evidenceMode ? 'on' : 'only-on-failure',
     video: 'retain-on-failure',
     launchOptions: {
-      executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH || '/usr/bin/chromium',
-      args: ['--no-sandbox'],
+      ...(executablePath ? { executablePath } : {}),
+      args: process.platform === 'linux' ? ['--no-sandbox'] : [],
     },
   },
 });

@@ -113,6 +113,25 @@ npm run dev
 
 The frontend development server runs on port 5173. In the Docker deployment, Nginx serves the built application on port 80 and proxies `/api/` requests to the backend service.
 
+## Browser-level Playwright validation
+
+The browser suite can run against the Docker-served frontend on Windows, Linux, or macOS. The suite uses synthetic mocked API data for the acceptance journeys, so it does not require a production account or database. The Playwright configuration uses the system Chromium path on the Linux CI runner and the Playwright-managed browser on Windows and macOS unless `PLAYWRIGHT_EXECUTABLE_PATH` is explicitly set.
+
+From Command Prompt on Windows, after Docker reports healthy services:
+
+```cmd
+cd /d C:\path\to\AI_Governance_Assessor_v2.1\frontend
+npm ci
+npx playwright install chromium
+set "BASE_URL=http://localhost/"
+set "E2E_EVIDENCE=1"
+npm run test:e2e
+```
+
+`BASE_URL` points the browser at the Nginx frontend on port 80. `E2E_EVIDENCE=1` saves screenshots for each journey step and preserves the CSV/PDF downloads under `frontend\test-results`. The suite is safe to repeat because the API journey is mocked; use only synthetic data when separately testing the live Docker UI manually.
+
+For a quick local frontend-only run, start Vite with `npm run dev` and set `BASE_URL=http://localhost:5173/` instead. Do not use `PLAYWRIGHT_EXECUTABLE_PATH=C:\...` unless you intentionally want to run a separately installed Chrome or Edge binary.
+
 ## Validation checklist
 
 Run the backend suite, CLI suite, and frontend suite before opening a pull request. The public CI workflow also runs Black, Ruff, backend tests, CLI tests, and the frontend production build.
